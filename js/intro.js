@@ -30,7 +30,24 @@ const Intro = (() => {
   ];
 
   const ART_V = "20260823a";
+  const VO_V = "20260823b";
   let idx = 0, typeTimer = null;
+  // ---- Narrator voiceover ----
+  const VO = {};
+  BEATS.forEach((_, i) => { const a = new Audio(); a.preload = "auto"; a.src = `assets/vo/b${String(i).padStart(2,"0")}.mp3?v=${VO_V}`; VO[i] = a; });
+  function voActive() { return Object.values(VO).some(a => !a.paused && !a.ended); }
+  function playVO(i) {
+    if (AudioMuted || !VO[i] || !VO[i].src) return;
+    const a = VO[i];
+    try { a.currentTime = 0; } catch (_) {}
+    if (typeof Chip !== "undefined") Chip.duckMusic(0.08, .4); // deep bed under speech
+    a.onended = () => { if (!voActive() && typeof Chip !== "undefined") Chip.duckMusic(0.5, 1.8); }; // swell back
+    a.play().catch(() => {});
+  }
+  function stopVO() {
+    Object.values(VO).forEach(a => { a.pause(); try { a.currentTime = 0; } catch (_) {} });
+    if (typeof Chip !== "undefined" && !AudioMuted) Chip.duckMusic(0.5, .8);
+  }
 
   // gentle crossfaded theme switching
   let fadeTimer = null;
@@ -65,6 +82,7 @@ const Intro = (() => {
 
   function stop() {
     if (typeTimer) clearInterval(typeTimer);
+    stopVO();
     clearTimeout(fadeTimer);
     if (introKeyHandler) document.removeEventListener("keydown", introKeyHandler);
     document.getElementById("screen-intro").onclick = null;
@@ -72,6 +90,7 @@ const Intro = (() => {
 
   function playBeat() {
     const b = BEATS[idx];
+    playVO(idx);
     if (b.cue) cueTheme(b.cue);
     else if (!b.final && b.sting && typeof Chip !== "undefined" && !AudioMuted) {
       if (b.sting === "delightBurst") Chip.delightBurst(1); else setTimeout(() => Chip[b.sting](), 250);
