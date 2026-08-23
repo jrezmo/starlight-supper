@@ -389,3 +389,34 @@ body {
 .save-row span { flex: 1; text-align: left; }
 .save-row .dim { opacity: .55; }
 .save-row .btn { padding: 5px 10px; font-size: 12px; }
+
+/* ---------- Cinematic intro ---------- */
+#screen-cine {
+  background: #000;
+  align-items: center; justify-content: center;
+}
+#cine-video {
+  width: 100vw; height: 100vh;
+  object-fit: contain; /* letterboxed */
+  background: #000;
+}
+#cine-titlecard {
+  position: absolute; inset: 0;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  text-align: center; pointer-events: none;
+  opacity: 0; transition: opacity 1.6s ease;
+}
+#cine-titlecard.show { opacity: 1; }
+#cine-titlecard .game-title { margin: 0; }
+#cine-titlecard .subtitle { font-size: clamp(14px, 2.4vw, 20px); }
+#cine-skip {
+  position: absolute; top: 18px; right: 18px; z-index: 10;
+  padding: 12px 22px; font-size: 17px; letter-spacing: 1px;
+  background: rgba(0,0,0,.55); border-color: var(--gold); color: var(--gold);
+}
+#cine-mute {
+  position: absolute; bottom: 18px; left: 18px; z-index: 10;
+  padding: 10px 14px; font-size: 16px;
+  background: rgba(0,0,0,.55);
+}
