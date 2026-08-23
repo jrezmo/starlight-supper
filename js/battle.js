@@ -307,6 +307,11 @@ const TeaParty = (() => {
     });
   }
 
+  function getRandomDishTag() {
+    const tags = ["sweet", "spicy", "savory", "seafood", "earthy"]; // All possible dish tags
+    return pick(tags);
+  }
+
   function doMove(m) {
     if (T.over) return;
     if (chance(m.risk)) {
@@ -317,10 +322,17 @@ const TeaParty = (() => {
       $("player-battle-canvas").parentElement.classList.add("shake");
       setTimeout(() => $("player-battle-canvas").parentElement.classList.remove("shake"), 450);
     } else {
-      const g = rand(m.gain[0], m.gain[1]);
+      let g = rand(m.gain[0], m.gain[1]);
+      // WS-2: Rival palate weaknesses (simplified for Tea Party)
+      const servedTag = getRandomDishTag();
+      if (T.rv.weakTag && servedTag === T.rv.weakTag) {
+        g = Math.round(g * 1.5);
+        log(`☕ +${g} Delight (WEAKNESS HIT!) (${T.delight}/${T.target})! ${m.flavor}`, "battle-log");
+      } else {
+        log(`☕ +${g} Delight (${T.delight}/${T.target})! ${m.flavor}`, "battle-log");
+      }
       T.delight = Math.min(T.target, T.delight + g);
       AudioSys.good(); Chip.delightBurst(Math.floor(T.delight / 20));
-      log(`☕ +${g} Delight (${T.delight}/${T.target})! ${m.flavor}`, "battle-log");
     }
     T.round++; updateUI();
     if (T.delight >= T.target) return win();
