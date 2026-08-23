@@ -1,68 +1,132 @@
-/* ============ Cinematic intro v2 — video + synced narration ============
-   One cohesive opener: assets/cinematic/intro-web.mp4 plays as the visual
-   layer; the existing narrator VO plays over it with subtitle captions
-   pinned to video timecodes. Ends (or is skipped) → straight to the hub. */
+/* ============ Cinematic intro v3 — narration-driven shot sequencer ============
+   Each story beat owns one Flow-generated video clip. The clip plays; when the
+   clip ends but the narrator VO is still speaking, we hold the last frame on a
+   canvas with a slow Ken Burns drift so nothing feels frozen. Next beat starts
+   only when its VO completes. Title card = final beat, then hub. */
 "use strict";
 const Cinematic = (() => {
-  // beat → timecode map (seconds), matched to the 38.3s re-stitched cut:
-  // shot xfades ≈7.1 / 14.2 / 21.3 / 29.4; title shot ≈30.2→38.3
-  const BEAT_TIMES = [0, 7.5, 14.5, 21.5];
-  const BEAT_ENDS = [7, 14, 21, 29]; // caption off-times
-  const TITLE_AT = 31; // fade in HTML title from ~31s (final ~8s)
+  // beat order: kettle(Sundering) → kitchen(Nimbus) → map(jewels/napkin) → liftoff(worlds) → title
+  const SHOTS = [
+    { src: "assets/cinematic/shot-kettle.mp4",  beat: 0 },
+    { src: "assets/cinematic/shot-kitchen.mp4", beat: 1 },
+    { src: "assets/cinematic/shot-map.mp4",     beat: 2 },
+    { src: "assets/cinematic/shot-liftoff.mp4", beat: 3 },
+    { src: "assets/cinematic/shot-title.mp4",   beat: -1, title: true },
+  ];
 
-  let onDone = null;
-  let finished = false;
-  let tapTimer = null;
-  let captionIdx = -1;
-  let bound = false;
+  let onDone = null, finished = false, tapTimer = null, bound = false;
+  let seqAbort = null, holdRAF = null, holdCanvas = null, holdCtx = null;
 
   function $(id) { return document.getElementById(id); }
+  function wait(ms) { return new Promise(r => setTimeout(r, ms)); }
 
   function bindOnce() {
     if (bound) return;
     bound = true;
-    const vid = $("cine-video");
-
     $("cine-skip").onclick = (e) => { e.stopPropagation(); finish(); };
-
-    // tap/click anywhere skips once the clip has been up for 3s
     $("screen-cine").addEventListener("click", () => {
-      if (tapTimer !== null) finish();
+      if (tapTimer === null) finish(); // grace period handled in play()
     });
-
     document.addEventListener("keydown", (e) => {
       if (e.key === "Escape" && window.__activeScreen === "screen-cine") {
-        e.preventDefault();
-        finish();
+        e.preventDefault(); finish();
       }
     });
-
-    vid.addEventListener("ended", () => finish());
-    vid.addEventListener("error", () => finish()); // missing/broken asset → straight to hub
-    vid.addEventListener("timeupdate", onTime);
+    $("cine-mute").onclick = (e) => {
+      e.stopPropagation();
+      AudioMuted = typeof AudioSys !== "undefined" ? AudioSys.toggleMute() : !AudioMuted;
+      if (typeof Chip !== "undefined") Chip.setMuted(AudioMuted);
+      const v = $("cine-video"); if (v) v.muted = AudioMuted;
+      $("cine-mute").textContent = AudioMuted ? "🔇" : "🔊";
+    };
   }
 
-  function onTime() {
+  /* Hold a video's last frame on canvas with slow zoom drift. Resolves when
+     the predicate fires or abort signal trips. */
+  function holdLastFrame(video, shouldContinue) {
+    return new Promise(resolve => {
+      try {
+        holdCanvas.classList.add("active"); video.style.visibility = "hidden";
+        holdCanvas.width = video.videoWidth || 960;
+        holdCanvas.height = video.videoHeight || 540;
+        let t0 = performance.now();
+        const draw = (now) => {
+          if (!shouldContinue()) { resolve(); return; }
+          const el = (now - t0) / 1000;
+          const zoom = 1 + Math.min(0.06, el * 0.004); // slow push-in, max 6%
+          const c = holdCtx, w = holdCanvas.width, h = holdCanvas.height;
+          c.clearRect(0, 0, w, h);
+          c.drawImage(video, -(w * zoom - w) / 2, -(h * zoom - h) / 2, w * zoom, h * zoom);
+          holdRAF = requestAnimationFrame(draw);
+        };
+        holdRAF = requestAnimationFrame(draw);
+      } catch (_) { resolve(); }
+    });
+  }
+  function stopHold() { if (holdRAF) cancelAnimationFrame(holdRAF); holdRAF = null; if (holdCanvas) holdCanvas.classList.remove("active"); const v = $("cine-video"); if (v) v.style.visibility = "visible"; }
+
+  /* Wait until VO for beat i finishes (or fails to exist). */
+  function voDone(i) {
+    if (typeof Intro === "undefined" || !Intro.VO[i]) return wait(300);
+    const a = Intro.VO[i];
+    if (AudioMuted) return wait(Math.min(a.duration || 9, 9) * 1000);
+    return new Promise(res => {
+      if (a.ended) return res();
+      a.onended = () => res();
+      // safety: never hang longer than duration + 3s
+      setTimeout(res, ((a.duration || 10) + 3) * 1000);
+    });
+  }
+
+  async function runSequence() {
     const vid = $("cine-video");
-    try {
-      // narration captions per mapped window
-      if (typeof Intro !== "undefined") {
-        let i = -1;
-        for (let k = 0; k < BEAT_TIMES.length; k++) {
-          if (vid.currentTime >= BEAT_TIMES[k] && vid.currentTime < BEAT_ENDS[k]) { i = k; break; }
-        }
-        if (i !== captionIdx) {
-          captionIdx = i;
-          if (i >= 0) { showCaption(i); Intro.playVO(i); } // narrator VO over the video
-          else clearCaption();
-        }
+    for (const shot of SHOTS) {
+      if (seqAbort.aborted) return;
+      // title beat: no VO, no caption — just the clip + HTML overlay
+      if (shot.title) {
+        await playClip(vid, shot.src);
+        if (seqAbort.aborted) return;
+        continue;
       }
-      // finale title card
-      if (vid.currentTime >= TITLE_AT) {
-        clearCaption();
-        $("cine-titlecard").classList.add("show");
-      }
-    } catch (_) {}
+      const i = shot.beat;
+      showCaption(i);
+      if (typeof Intro !== "undefined") Intro.playVO(i);
+      await playClipHoldForVO(vid, shot.src, i);
+      clearCaption();
+      if (seqAbort.aborted) return;
+      await wait(350); // breathing room between beats
+    }
+    // small hold on title before hub
+    await wait(1800);
+  }
+
+  function playClip(vid, src) {
+    return new Promise(resolve => {
+      vid.src = src;
+      vid.muted = !!AudioMuted;
+      vid.play().catch(() => {});
+      vid.onended = () => resolve();
+      vid.onerror = () => resolve();
+    });
+  }
+
+  async function playClipHoldForVO(vid, src, beatIdx) {
+    vid.src = src;
+    vid.muted = true; // keep clip audio low? no — let it play; but VO must be audible
+    vid.muted = !!AudioMuted;
+    vid.play().catch(() => {});
+    // wait for clip end OR vo end, whichever is later:
+    const clipEnd = new Promise(resolve => { vid.onended = resolve; vid.onerror = resolve; });
+    await clipEnd;
+    if (seqAbort.aborted) return;
+    // VO still going? freeze frame + drift
+    const a = typeof Intro !== "undefined" ? Intro.VO[beatIdx] : null;
+    if (a && !a.ended && !a.paused) {
+      await holdLastFrame(vid, () => !seqAbort.aborted && !a.ended && !a.paused);
+    }
+    if (typeof Intro !== "undefined" && Intro.VO[beatIdx]) {
+      await voDone(beatIdx);
+    }
   }
 
   function showCaption(i) {
@@ -71,66 +135,51 @@ const Cinematic = (() => {
     el.textContent = beats[i] ? beats[i].text : "";
     el.classList.remove("show"); void el.offsetWidth; el.classList.add("show");
   }
-
-  function clearCaption() {
-    if (captionIdx === -1) return;
-    captionIdx = -1;
-    $("cine-caption").classList.remove("show");
-  }
+  function clearCaption() { $("cine-caption").classList.remove("show"); }
 
   function play(done) {
     onDone = done || null;
     finished = false;
-    captionIdx = -1;
+    seqAbort = { aborted: false };
     bindOnce();
 
-    // pause chiptune during playback (narration carries the audio)
-    if (typeof Chip !== "undefined") Chip.stop();
-
-    // sync mute button with existing AudioMuted state
-    const vid = $("cine-video");
-    vid.muted = !!AudioMuted;
-    updateMuteLabel();
+    if (typeof Chip !== "undefined") Chip.stop(); // pause chiptune during cine
+    holdCanvas = $("cine-hold"); holdCtx = holdCanvas ? holdCanvas.getContext("2d") : null;
     $("cine-titlecard").classList.remove("show");
-    $("cine-caption").classList.remove("show");
+    clearCaption();
+    $("cine-mute").textContent = AudioMuted ? "🔇" : "🔊";
 
     showScreen("screen-cine");
     clearTimeout(tapTimer);
-    tapTimer = setTimeout(() => { tapTimer = null; }, 3000); // tap-to-skip grace period
+    tapTimer = setTimeout(() => { tapTimer = null; }, 3000);
 
-    // inside the user-gesture call stack → satisfies autoplay policies
-    const p = vid.play();
-    if (p && p.catch) p.catch(() => {}); // if blocked, ended/error won't fire; skip still works
-  }
-
-  function updateMuteLabel() {
-    $("cine-mute").textContent = AudioMuted ? "🔇" : "🔊";
-  }
-
-  function toggleMute() {
-    AudioMuted = typeof AudioSys !== "undefined" ? AudioSys.toggleMute() : !AudioMuted;
-    if (typeof Chip !== "undefined") Chip.setMuted(AudioMuted);
-    $("cine-video").muted = AudioMuted;
-    updateMuteLabel();
+    // kick sequence inside user gesture
+    runSequence().then(() => { if (!finished && !seqAbort.aborted) finish(); })
+                 .catch(() => finish());
   }
 
   function finish() {
     if (finished) return;
     finished = true;
-    clearTimeout(tapTimer);
-    tapTimer = null;
+    if (seqAbort) seqAbort.aborted = true;
+    clearTimeout(tapTimer); tapTimer = null;
+    stopHold();
     if (typeof Intro !== "undefined") Intro.stopVO();
     clearCaption();
     const vid = $("cine-video");
     try { vid.pause(); } catch (_) {}
-    try { vid.currentTime = 0; } catch (_) {}
+    try { vid.removeAttribute("src"); vid.load(); } catch (_) {}
     $("cine-titlecard").classList.remove("show");
-    const cb = onDone;
-    onDone = null;
-    if (cb) cb(); // caller transitions to the hub
+    const cb = onDone; onDone = null;
+    if (cb) cb();
   }
 
-  $("cine-mute").onclick = (e) => { e.stopPropagation(); toggleMute(); };
+  // title overlay trigger: when title shot starts playing
+  const origPlayClip = playClip;
+  playClip = function (vid, src) {
+    if (src.includes("title")) $("cine-titlecard").classList.add("show");
+    return origPlayClip(vid, src);
+  };
 
   return { play, finish };
 })();

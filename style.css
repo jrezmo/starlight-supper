@@ -400,6 +400,21 @@ body {
   object-fit: contain; /* letterboxed */
   background: #000;
 }
+#cine-hold {
+  position: absolute; inset: 0;
+  width: 100%; height: 100%;
+  object-fit: contain;
+  display: none; background: #000;
+}
+#cine-hold.active { display: block; }
+#cine-caption {
+  position: absolute; left: 50%; bottom: 9vh; transform: translateX(-50%);
+  max-width: min(760px, 88vw); text-align: center;
+  font-size: clamp(15px, 2.2vw, 21px); line-height: 1.55; color: #f2edff;
+  text-shadow: 0 2px 14px rgba(0,0,0,.95), 0 0 30px rgba(140,110,255,.35);
+  opacity: 0; transition: opacity .5s ease; pointer-events: none;
+}
+#cine-caption.show { opacity: 1; }
 #cine-titlecard {
   position: absolute; inset: 0;
   display: flex; flex-direction: column;
