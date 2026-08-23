@@ -70,6 +70,34 @@ const Battle = (() => {
     renderAlliesBar(); updateBattleUI();
   }
 
+  // WS-2: Execute an ally combo
+  function executeAllyCombo(combo) {
+    if (B.over) return;
+
+    // Check if any of the allies for this combo are already used
+    const anyAllyUsed = combo.allies.some(allyId => B.alliesUsed[allyId]);
+    if (anyAllyUsed) {
+      blog(`🚫 Cannot use ${combo.name}: one or more allies already used this turn.`);
+      return;
+    }
+
+    // Mark combo allies as used for the turn
+    combo.allies.forEach(allyId => { B.alliesUsed[allyId] = true; });
+
+    let dmg = Math.round(combo.baseDmg * combo.multiplier);
+    blog(`✨ ${combo.name}! You deal <b>${dmg}</b> damage.`);
+    dealEnemy(dmg);
+
+    // Apply additional effects
+    if (combo.effect) {
+      if (combo.effect.healPlayer) { healPlayer(combo.effect.healPlayer); blog(`❤️ You heal for ${combo.effect.healPlayer} HP!`); }
+      if (combo.effect.enemyDebuff) { B.enemyDebuff += combo.effect.enemyDebuff; blog(`📉 Enemy attack reduced by ${Math.abs(combo.effect.enemyDebuff)}!`); }
+      if (combo.effect.block) { B.block += combo.effect.block; blog(`🛡️ You gain ${combo.effect.block} block!`); }
+    }
+    AudioSys.good(); Chip.combo(); // Assuming Chip.combo() exists
+    endPlayerAction();
+  }
+
   function blog(m) { log(m, "battle-log"); }
   function healPlayer(n) { State.hp = clamp(State.hp + n, 0, State.maxHp); AudioSys.heal(); }
   function dealEnemy(n) {
@@ -116,6 +144,16 @@ const Battle = (() => {
       B.charge = true; blog(`⚡ You channel starlight into your spatula...`);
       endPlayerAction();
     }, B.charge);
+
+    // WS-2: Ally Combos
+    getActiveAllyCombos().forEach(combo => {
+      // Check if allies required for this combo are already used this turn
+      const isUsed = combo.allies.some(allyId => B.alliesUsed[allyId]);
+      mkBtn(actions, `✨ ${combo.name} (${combo.allies.map(id => DATA.rivals.find(r => r.id === id).emojiKey).join('')})`, "btn-purple", () => {
+        executeAllyCombo(combo);
+      }, isUsed);
+    });
+
     Object.entries(State.dishes).forEach(([id, n]) => {
       if (n <= 0) return;
       const r = DATA.recipes.find(x => x.id === id);
