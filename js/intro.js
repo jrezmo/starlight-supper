@@ -142,7 +142,8 @@ const Intro = (() => {
   }
 
   function advance() {
-    if (skipTypewriter()) return;
+    if (skipTypewriter()) { stopVO(); return; } // skipping text also kills that pane's narration
+    stopVO(); // advancing: kill current pane's voice so panes never overlap
     if (idx < BEATS.length - 1) { idx++; AudioSys.click(); playBeat(); return; }
     stop();
     State.introDone = true;
