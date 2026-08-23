@@ -18,9 +18,9 @@
   .wrap{max-width:900px;margin:0 auto;padding:0 20px}
   header.hero{text-align:center;padding:70px 20px 40px;background:
     radial-gradient(ellipse at 50% -10%, #2a2460 0%, var(--bg) 60%);}
-  .hero h1{font-size:clamp(2.2rem,6vw,3.6rem);letter-spacing:.12em;color:var(--gold);text-transform:uppercase;line-height:1.1}
-  .hero .sub{color:var(--vess);font-style:italic;font-size:1.15rem;margin:.5rem 0 0}
-  .hero .issue{margin-top:14px;font-family:inherit;color:var(--dim);font-size:.85rem;letter-spacing:.2em;text-transform:uppercase}
+  .hero h1{font-size:clamp(1.5rem,7vw,3.6rem);letter-spacing:.12em;color:var(--gold);text-transform:uppercase;line-height:1.15}
+  .hero .sub{color:var(--vess);font-style:italic;font-size:clamp(.95rem,2.5vw,1.15rem);margin:.5rem auto 0;max-width:34em}
+  .hero .issue{margin-top:14px;font-family:inherit;color:var(--dim);font-size:.85rem;letter-spacing:.2em;text-transform:uppercase;overflow-wrap:break-word}
   .hero img.splash{max-width:420px;width:80%;border-radius:12px;margin:26px auto 8px;display:block;border:1px solid #3a3a66;box-shadow:0 8px 40px rgba(255,215,107,.15)}
   .playbtn{display:inline-block;margin-top:18px;background:var(--gold);color:#1a1400;font-weight:bold;text-decoration:none;padding:13px 34px;border-radius:999px;font-family:Arial,sans-serif;font-size:1.05rem;box-shadow:0 4px 24px rgba(255,215,107,.35);transition:transform .15s}
   .playbtn:hover{transform:scale(1.05)}
@@ -55,6 +55,15 @@
   .step .n{flex-shrink:0;width:34px;height:34px;border-radius:50%;background:var(--gold);color:#1a1400;display:flex;align-items:center;justify-content:center;font-weight:bold;font-family:Arial,sans-serif}
   footer{text-align:center;padding:40px 20px;color:var(--dim);font-size:.85rem}
   .divider{text-align:center;color:var(--dim);letter-spacing:1em;padding:10px 0;font-size:.8rem}
+  @media (max-width:600px){
+    header.hero{padding:44px 16px 32px}
+    nav.toc .wrap{gap:4px;padding:0 10px}
+    .cardgrid[style]{grid-template-columns:1fr !important}
+    .step{flex-direction:column;gap:6px}
+    table{font-size:.82rem;display:block;overflow-x:auto}
+    th,td{padding:6px}
+    .hero .issue{letter-spacing:.12em}
+  }
 </style>
 </head>
 <body>
