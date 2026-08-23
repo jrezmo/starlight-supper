@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Starlight Supper</title>
+<link rel="stylesheet" href="style.css?v=20260822u">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🛸</text></svg>">
+</head>
+<body>
+<div id="game-shell">
+  <canvas id="bg-canvas"></canvas>
+  <div id="planet-bg"></div>
+
+  <!-- TITLE -->
+  <div id="screen-title" class="screen active">
+    <div class="title-card">
+      <img src="assets/title.png" class="title-splash" alt="Starlight Supper" onerror="this.remove()">
+      <h1 class="game-title">STARLIGHT<br>SUPPER</h1>
+      <p class="subtitle">A Cosmic Culinary Odyssey</p>
+      <p class="lore-blurb">The Great Kettle went cold at the Sundering. Three jewels once warmed the first broth of the cosmos.<br>You are Nimbus Quill, last of the Vessari Gourmand Nomads.<br>Cook. Breed worms. Duel with etiquette. Rekindle the Kettle.</p>
+      <button id="btn-new-game" class="btn btn-primary">Begin the Journey</button>
+      <button id="btn-continue" class="btn" style="display:none">Continue</button>
+      <div class="credits">v1.0 · asimplenoise.com · best with sound on 🔊</div>
+    </div>
+  </div>
+
+  <!-- HUD -->
+  <div id="hud" class="hidden">
+    <div class="hud-left">
+      <span id="hud-day">Day 1</span>
+      <span id="hud-energy" class="phase-chip">⚡ 3/3</span>
+      <span id="hud-phase" class="phase-chip">☀️ DAY</span>
+      <span id="hud-location">🏠 Home Shelter</span>
+    </div>
+    <div class="hud-right">
+      <span id="hud-hp">❤️ 30/30</span>
+      <span id="hud-money">💰 50</span>
+      <span id="hud-followers">📱 12 followers</span>
+      <button id="btn-menu" class="btn btn-small">☰</button>
+    </div>
+  </div>
+
+  <!-- HUB (home base) -->
+  <div id="screen-hub" class="screen">
+    <h2 id="hub-title" class="screen-title">Home Shelter</h2>
+    <div id="hub-goal" class="hub-goal"></div>
+    <div id="hub-buttons" class="btn-grid"></div>
+    <div id="hub-log" class="log-box"></div>
+  </div>
+
+  <!-- GENERIC PANEL SCREEN (cooking, worms, shelter, shop, forklore...) -->
+  <div id="screen-panel" class="screen">
+    <h2 id="panel-title" class="screen-title"></h2>
+    <div id="panel-body"></div>
+    <div class="panel-footer"><button id="panel-back" class="btn">← Back</button></div>
+  </div>
+
+  <!-- WORLD (live expedition) -->
+  <div id="screen-world" class="screen">
+    <div class="world-topbar"><span id="world-title"></span><span id="world-sub"></span>
+      <button id="world-leave" class="btn btn-small">🛸 Leave (Esc)</button></div>
+    <canvas id="world-canvas"></canvas>
+    <div id="touch-stick"><div id="stick-knob"></div></div>
+  </div>
+
+  <!-- BATTLE -->
+  <div id="screen-battle" class="screen">
+    <div class="battle-stage">
+      <div class="battle-enemy">
+        <canvas id="enemy-canvas" width="220" height="220"></canvas>
+        <div class="unit-bar enemy-bar">
+          <div class="unit-name" id="enemy-name"></div>
+          <div class="hp-track"><div class="hp-fill" id="enemy-hp"></div><span id="enemy-hp-text"></span></div>
+          <div class="intent" id="enemy-intent"></div>
+        </div>
+      </div>
+      <div class="battle-vs">⚔️</div>
+      <div class="battle-player">
+        <div class="unit-bar player-bar">
+          <div class="unit-name">Nimbus Quill</div>
+          <div class="hp-track"><div class="hp-fill" id="player-hp"></div><span id="player-hp-text"></span></div>
+          <div class="buffs" id="player-buffs"></div>
+        </div>
+        <canvas id="player-battle-canvas" width="200" height="200"></canvas>
+      </div>
+    </div>
+    <div class="battle-allies" id="battle-allies"></div>
+    <div class="battle-log log-box" id="battle-log"></div>
+    <div class="battle-actions" id="battle-actions"></div>
+  </div>
+
+  <!-- INTRO CINEMATIC -->
+  <div id="screen-intro" class="screen">
+    <div class="intro-stage">
+      <div id="intro-vignette"></div>
+      <div class="intro-content">
+        <div id="intro-title"></div>
+        <div id="intro-label"></div>
+        <div id="intro-text"></div>
+        <div id="intro-hint">click / space</div>
+      </div>
+      <div id="intro-dots"></div>
+      <button id="intro-btn" class="btn btn-primary intro-btn">▸</button>
+    </div>
+  </div>
+
+  <!-- STORY / DIALOGUE OVERLAY -->
+  <div id="overlay-story" class="overlay hidden">
+    <div class="story-card">
+      <div id="story-portrait-wrap"><canvas id="story-portrait" width="140" height="140"></canvas></div>
+      <div class="story-text-wrap">
+        <div id="story-speaker" class="story-speaker"></div>
+        <div id="story-text" class="story-text"></div>
+      </div>
+      <button id="story-next" class="btn btn-primary">▸</button>
+    </div>
+  </div>
+
+  <!-- TOASTS -->
+  <div id="toasts"></div>
+
+  <!-- MENU OVERLAY -->
+  <div id="overlay-menu" class="overlay hidden">
+    <div class="menu-card">
+      <h3>Paused</h3>
+      <button id="btn-resume" class="btn btn-primary">Resume</button>
+      <button id="btn-save" class="btn">Save Game</button>
+      <button id="btn-saves" class="btn">💾 Save Manager</button>
+      <button id="btn-mute" class="btn">🔊 Sound: On</button>
+      <button id="btn-howto" class="btn">How to Play</button>
+      <button id="btn-wipe" class="btn btn-danger">Erase Save</button>
+      <div id="howto" class="howto hidden">        <b>The Loop:</b> Each day gives you <b>⚡3 energy</b>. Spend it freely: cook gourmet dishes, post them on <i>Forklore</i>, breed your worms, upgrade the shelter, or launch an expedition. When energy runs low you can push on into risky (richer) night actions — or sleep to restore everything.<br><br>
+        On expeditions, <b>walk the route graph</b>: fights, caches, groves, strangers with choices, and sometimes a rival's tea invitation. Win a tea party and that rival joins your battles.<br><br>
+        Collect all three Great Jewels — Hearthstone Ruby, Abyssal Sapphire, Gale Emerald — then face <b>Thor</b>, who wears the Emerald as a belt buckle because "it matched his cape."
+      </div>
+    </div>
+  </div>
+
+  <!-- SAVE MANAGER -->
+  <div id="save-manager" class="overlay hidden">
+    <div class="menu-card">
+      <h3>💾 Save Manager</h3>
+      <div id="save-slots"></div>
+      <button id="btn-saves-close" class="btn btn-primary">Close</button>
+    </div>
+  </div>
+</div>
+
+<script src="js/data.js?v=20260822u"></script>
+<script src="js/audio.js?v=20260822u"></script>
+<script src="js/chip.js?v=20260822u"></script>
+<script src="js/art.js?v=20260822u"></script>
+<script src="js/engine.js?v=20260822u"></script>
+<script src="js/cooking.js?v=20260822u"></script>
+<script src="js/battle.js?v=20260822u"></script>
+<script src="js/story.js?v=20260822u"></script>
+<script src="js/intro.js?v=20260822u"></script>
+<script src="js/worldmap.js?v=20260822u"></script>
+<script src="js/world.js?v=20260822u"></script>
+<script src="js/hub.js?v=20260822u"></script>
+<script src="js/main.js?v=20260822u"></script>
+</body>
+</html>
