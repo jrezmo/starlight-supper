@@ -70,13 +70,13 @@ DATA.upgrades = [
 
 /* ---------- Enemies ---------- */
 DATA.enemies = {
-  grubble:   { name: "Grubble Pack", hp: 16, atk: [3,5], emojiKey: "grubble", loot: { glowsroom: 1 }, money: [12,20] },
-  sporeling: { name: "Angry Sporeling", hp: 22, atk: [4,7], emojiKey: "sporeling", loot: { cloudfruit: 1 }, money: [15,26] },
-  magmaw:    { name: "Magmaw Wyrmling", hp: 34, atk: [6,9], emojiKey: "magmaw", loot: { emberpepper: 1, lavasalt: 1 }, money: [26,44] },
-  ashbandit: { name: "Ash Bandit", hp: 30, atk: [5,9], emojiKey: "ashbandit", loot: { cinderfin: 1 }, money: [30,52] },
-  brinefiend:{ name: "Brine Fiend", hp: 42, atk: [7,11], emojiKey: "brine", loot: { abysskelp: 1 }, money: [38,60] },
-  tidehulk:  { name: "Tidehulk", hp: 60, atk: [9,13], emojiKey: "tidehulk", loot: { moonroe: 1 }, money: [55,85], boss: true },
-  volt:      { name: "Baron Volt", hp: 90, atk: [8,12], emojiKey: "volt", boss: true, final: true },
+  grubble:   { name: "Grubble Pack", hp: 16, atk: [3,5], emojiKey: "grubble", loot: { glowsroom: 1 }, money: [12,20], weakTag: "spicy" },
+  sporeling: { name: "Angry Sporeling", hp: 22, atk: [4,7], emojiKey: "sporeling", loot: { cloudfruit: 1 }, money: [15,26], weakTag: "savory" },
+  magmaw:    { name: "Magmaw Wyrmling", hp: 34, atk: [6,9], emojiKey: "magmaw", loot: { emberpepper: 1, lavasalt: 1 }, money: [26,44], weakTag: "seafood" },
+  ashbandit: { name: "Ash Bandit", hp: 30, atk: [5,9], emojiKey: "ashbandit", loot: { cinderfin: 1 }, money: [30,52], weakTag: "sweet" },
+  brinefiend:{ name: "Brine Fiend", hp: 42, atk: [7,11], emojiKey: "brine", loot: { abysskelp: 1 }, money: [38,60], weakTag: "earthy" },
+  tidehulk:  { name: "Tidehulk", hp: 60, atk: [9,13], emojiKey: "tidehulk", loot: { moonroe: 1 }, money: [55,85], boss: true, weakTag: "spicy" },
+  volt:      { name: "Baron Volt", hp: 90, atk: [8,12], emojiKey: "volt", boss: true, final: true, weakTag: "savory" },
 };
 
 /* ---------- Tea party rivals → become allies ---------- */
@@ -149,3 +149,16 @@ DATA.introStory = [
   { speaker: "Oracle Worm", text: "(adjusting a tiny monocle) The plan, then: by day, cook gourmet dishes and post them on Forklore for money. By ⚡energy, expedition to each world." },
   { speaker: "Oracle Worm", text: "On each planet: befriend its champion at a TEA PARTY 🍵 — they'll reveal the vault. Open all three vaults, take the jewels... and the storm critic BARON VOLT will come for your jewels — and your table. Any questions? Good. Wear pants." },
 ];
+
+DATA.getRecipeIngredientTags = (recipeId) => {
+  const recipe = DATA.recipes.find(r => r.id === recipeId);
+  if (!recipe || !recipe.req) return [];
+  const tags = new Set();
+  for (const ingId in recipe.req) {
+    const ingredient = DATA.ingredients[ingId];
+    if (ingredient && ingredient.tags) {
+      ingredient.tags.forEach(tag => tags.add(tag));
+    }
+  }
+  return Array.from(tags);
+};
