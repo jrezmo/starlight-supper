@@ -405,29 +405,54 @@ const World = (() => {
   return window.World;
 })();
 
-/* touch stick for mobile */
+/* touch stick for mobile / iPad */
 (function () {
-  let sx = 0, sy = 0, active = false;
+  let stickId = null, sx = 0, sy = 0;
+  const el = () => document.getElementById("touch-stick");
   const knob = () => document.getElementById("stick-knob");
-  document.addEventListener("pointerdown", e => {
-    const cv = document.getElementById("world-canvas");
-    if (!cv) return;
-    active = true; sx = e.clientX; sy = e.clientY;
-  });
-  document.addEventListener("pointermove", e => {
-    if (!active) return;
-    const dx = clamp((e.clientX - sx) / 40, -1, 1), dy = clamp((e.clientY - sy) / 40, -1, 1);
-    if (window.__stickHook) window.__stickHook(dx, dy);
-  });
-  document.addEventListener("pointerup", () => {
-    active = false;
-    if (window.__stickHook) window.__stickHook(0, 0);
-    const k = knob(); if (k) { k.style.left = "33px"; k.style.top = "33px"; }
-  });
-})();
+  const worldOpen = () => document.getElementById("screen-world")?.classList.contains("active");
 
-/* show stick on any touch-capable device (iPad reports pointer:fine in some modes) */
-if ("ontouchstart" in window || (navigator.maxTouchPoints || 0) > 1) {
-  const el = document.getElementById("touch-stick");
-  if (el) el.style.display = "block";
-}
+  function setKnob(dx, dy) {
+    const k = knob(); if (!k) return;
+    k.style.left = (33 + dx * 33) + "px";
+    k.style.top  = (33 + dy * 33) + "px";
+  }
+  function emit(e) {
+    const dx = clamp((e.clientX - sx) / 40, -1, 1), dy = clamp((e.clientY - sy) / 40, -1, 1);
+    if (Math.abs(dx) < .18 && Math.abs(dy) < .18) { if (window.__stickHook) window.__stickHook(0, 0); setKnob(0, 0); return; }
+    if (window.__stickHook) window.__stickHook(dx, dy);
+    setKnob(clamp(dx * 1.4, -1, 1), clamp(dy * 1.4, -1, 1));
+  }
+  // Stick control: use the on-screen stick itself (pointerdown ON it), with
+  // capture so iPad Safari keeps sending moves even when the finger drifts off.
+  document.addEventListener("pointerdown", e => {
+    if (!worldOpen()) return;
+    const s = el();
+    if (!s || s.style.display === "none") return;
+    if (!s.contains(e.target)) return;          // only start drags on the stick
+    stickId = e.pointerId; sx = e.clientX; sy = e.clientY;
+    try { s.setPointerCapture(e.pointerId); } catch (_) {}
+    e.preventDefault();
+  }, { passive: false });
+  document.addEventListener("pointermove", e => {
+    if (stickId === null || e.pointerId !== stickId) return;
+    e.preventDefault(); emit(e);
+  }, { passive: false });
+  const end = e => {
+    if (stickId === null || e.pointerId !== stickId) return;
+    stickId = null;
+    if (window.__stickHook) window.__stickHook(0, 0);
+    setKnob(0, 0);
+  };
+  document.addEventListener("pointerup", end);
+  document.addEventListener("pointercancel", end);
+
+  /* show stick on any touch-capable device (iPad reports pointer:fine in some modes) */
+  const touchy = "ontouchstart" in window || (navigator.maxTouchPoints || 0) > 1;
+  if (touchy) {
+    const show = () => { const s = el(); if (s) s.classList.add("js-touch"); };
+    show();
+    // re-assert each time the world screen opens (CSS media query may hide it)
+    new MutationObserver(show).observe(document.getElementById("screen-world") || document.body, { attributes: true, attributeFilter: ["class"] });
+  }
+})();
