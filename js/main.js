@@ -6,27 +6,10 @@
   if (typeof Chip !== "undefined" && !AudioMuted) Chip.play("title");
 
   $("btn-new-game").onclick = () => {
-    // peek BEFORE wiping saves — cineSeen must survive a new-game reset
-    resetState();
     localStorage.removeItem(SAVE_KEY);
     localStorage.removeItem("starlight-supper-autosave");
-    // first-time players get the cinematic; returning players (cineSeen or
-    // introDone) skip it entirely and land on the hub
-    if (!State.flags.cineSeen && typeof Cinematic !== "undefined") {
-      Cinematic.play(() => {
-        State.flags.cineSeen = true;
-        State.introDone = true;
-        autoslot();
-        updateHUD();
-        Hub.open();
-        toast("☀️ Day 1 — ⚡3 energy. Spend it well.", "gold");
-      });
-    } else {
-      State.introDone = true;
-      updateHUD();
-      Hub.open();
-      toast("☀️ Day 1 — ⚡3 energy. Spend it well.", "gold");
-    }
+    resetState();
+    startIntro();
   };
   $("btn-continue").style.display = hasSave() ? "" : "none";
   $("btn-continue").onclick = () => { loadGame(); updateHUD(); Hub.open(); };
@@ -51,11 +34,6 @@
   $("story-next").onclick = () => Story.next();
 
   function resetState() {
-    let hadCineSeen = !!(State.flags && State.flags.cineSeen);
-    try { // State isn't hydrated from autosave until Continue, so peek there too
-      const auto = JSON.parse(localStorage.getItem("starlight-supper-autosave") || "null");
-      if (auto && auto.flags && auto.flags.cineSeen) hadCineSeen = true;
-    } catch (_) {}
     Object.assign(State, {
       day: 1, energy: 3, maxEnergy: 3, hp: 30, maxHp: 30, money: 50, followers: 12,
       planet: null, inventory: {}, dishes: {}, upgrades: {},
@@ -63,7 +41,6 @@
       flags: { rations: 1, wormBlessing: 0 }, introDone: false, wormBuys: 0,
     });
     addInv("starbloom", 2); addInv("glowsroom", 2);
-    State.flags.cineSeen = hadCineSeen; // one-time cinematic flag survives a new-game reset
   }
 
   function startIntro() {
