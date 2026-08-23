@@ -1,5 +1,5 @@
 /* Starlight Supper service worker — cache-first for static assets. */
-const CACHE = 'starlight-supper-v20260823a';
+const CACHE = 'starlight-supper-v20260823d';
 const ASSETS = [
   '/',
   '/index.html',
@@ -8,6 +8,10 @@ const ASSETS = [
   '/assets/icons/icon-192.png',
   '/assets/icons/icon-512.png',
   '/assets/icons/maskable-512.png',
+  '/js/intro.js',
+  '/assets/vo/b00.mp3','/assets/vo/b01.mp3','/assets/vo/b02.mp3','/assets/vo/b03.mp3',
+  '/assets/vo/b04.mp3','/assets/vo/b05.mp3','/assets/vo/b06.mp3','/assets/vo/b07.mp3',
+  '/assets/vo/b08.mp3','/assets/vo/b09.mp3','/assets/vo/b10.mp3','/assets/vo/b11.mp3',
 ];
 
 self.addEventListener('install', (e) => {

@@ -176,13 +176,13 @@ function updateHUD() {
         State.previousFollowers = newFollowers; // Update previous after animation
         // Check for milestones to play chiptune
         if (newFollowers > oldFollowers && newFollowers >= 100 && oldFollowers < 100) {
-          AudioSys.delightBurst(1); // Small burst for 100 followers
+          if (typeof Chip !== "undefined" && !AudioMuted) Chip.delightBurst(1); // Small burst for 100 followers
           toast("🎉 Viral! 100+ Followers!");
         } else if (newFollowers > oldFollowers && newFollowers >= 500 && oldFollowers < 500) {
-          AudioSys.delightBurst(2); // Medium burst for 500 followers
+          if (typeof Chip !== "undefined" && !AudioMuted) Chip.delightBurst(2); // Medium burst for 500 followers
           toast("🚀 Mega Viral! 500+ Followers!");
         } else if (newFollowers > oldFollowers && newFollowers >= 1000 && oldFollowers < 1000) {
-          AudioSys.delightBurst(3); // Large burst for 1000 followers
+          if (typeof Chip !== "undefined" && !AudioMuted) Chip.delightBurst(3); // Large burst for 1000 followers
           toast("🌠 Galaxy Famous! 1000+ Followers!");
         }
       }

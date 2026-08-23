@@ -2,6 +2,8 @@
 "use strict";
 (function () {
   Art.initBG($("bg-canvas"));
+  // title theme — deferred by Chip's gesture unlock if audio is still suspended
+  if (typeof Chip !== "undefined" && !AudioMuted) Chip.play("title");
 
   $("btn-new-game").onclick = () => {
     localStorage.removeItem(SAVE_KEY);
