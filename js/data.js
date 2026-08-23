@@ -98,6 +98,13 @@ DATA.rivals = [
     allySkill: { name: "Deep Cover", desc: "Heal 8 & gain 3 block" } },
 ];
 
+/* ---------- Ally Combos (WS-2) ---------- */
+DATA.allyCombos = [
+  { id: "vex_bramble_combo", name: "Flaming Rose Supper", allies: ["madame_vex", "chef_bramble"], desc: "Vex and Bramble combine for a fiery, fragrant dish.", baseDmg: 15, multiplier: 1.2, effect: { healPlayer: 5 } },
+  { id: "bramble_nell_combo", name: "Volcanic Kelp Stew", allies: ["chef_bramble", "admiral_nell"], desc: "Bramble's heat meets Nell's bounty for a spicy, deep-sea brew.", baseDmg: 18, multiplier: 1.2, effect: { enemyDebuff: -3 } },
+  { id: "vex_nell_combo", name: "Deep Forest Truffle", allies: ["madame_vex", "admiral_nell"], desc: "Vex's elegance and Nell's depth create a rich, earthy offering.", baseDmg: 12, multiplier: 1.2, effect: { block: 5 } },
+];
+
 /* ---------- Planets ---------- */
 DATA.planets = [
   { id: "verdanth", name: "Verdanth", icon: "🌿",
