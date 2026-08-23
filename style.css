@@ -248,10 +248,28 @@ body {
 @media (max-width: 640px) {
   .battle-stage { flex-direction: column; gap: 4px; }
   .battle-vs { display: none; }
-  #enemy-canvas { width: 130px; height: 130px; }
-  #player-battle-canvas { width: 110px; height: 110px; }
+  #enemy-canvas, #player-battle-canvas { width: 96px !important; height: 96px !important; }
+  #screen-battle .art-img { width: 96px; aspect-ratio: 1; }
   .unit-bar { width: 200px; }
   #hud { font-size: 12px; }
+}
+
+/* Short screens (iPhone): keep the whole battle above the fold */
+@media (pointer: coarse) and (max-height: 820px), (max-height: 640px) {
+  #screen-battle { padding-top: 56px; justify-content: flex-start; }
+  .battle-stage { margin-top: 0; }
+  #screen-battle .battle-enemy canvas,
+  #screen-battle .battle-player canvas { display: none; } /* replaced by .art-img when art loads */
+  #screen-battle .art-img { width: 84px; max-width: 84px; border-radius: 12px; }
+  .battle-vs { display: none; }
+  .battle-stage { flex-direction: row; gap: 10px; align-items: center; }
+  .unit-bar { width: 150px; }
+  .hp-track { height: 16px; }
+  .intent, .buffs { min-height: 14px; font-size: 11px; margin-top: 2px; }
+  .battle-allies { min-height: 34px; margin-top: 2px; }
+  .ally-chip { padding: 4px 10px; font-size: 12px; }
+  .battle-log { max-height: 64px; font-size: 12px; }
+  .battle-actions { margin-top: 4px; gap: 6px; }
 }
 
 /* ---------- v2: painted assets ---------- */

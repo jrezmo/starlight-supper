@@ -48,6 +48,13 @@ const Battle = (() => {
   }
   function maxAllies() { return 1 + upgradeLv("guesthall"); }
 
+  // WS-2: combos usable only when BOTH partner allies are currently recruited
+  // (and not already spent this battle). Missing helper crashed every battle.
+  function getActiveAllyCombos() {
+    const active = new Set(State.allies.slice(0, maxAllies()));
+    return (DATA.allyCombos || []).filter(c => c.allies.every(id => active.has(id)));
+  }
+
   function renderAlliesBar() {
     const bar = $("battle-allies"); bar.innerHTML = "";
     State.allies.slice(0, maxAllies()).forEach(id => {
@@ -142,7 +149,6 @@ const Battle = (() => {
     const actions = $("battle-actions"); actions.innerHTML = "";
 
     const weaknessMultiplier = getPlayerDishWeaknessMultiplier();
-
     mkBtn(actions, "⚔️ Strike", "btn-primary", () => {
       let dmg = rand(4, 7) + (B.charge ? 6 : 0);
       dmg = Math.round(dmg * weaknessMultiplier); // Apply weakness multiplier
