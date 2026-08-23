@@ -447,6 +447,53 @@ const World = (() => {
   document.addEventListener("pointerup", end);
   document.addEventListener("pointercancel", end);
 
+  /* --- touch-event fallback (iPad Safari) --------------------------------
+     Safari often fires pointercancel almost immediately on drags that start
+     inside a scrollable ancestor (.screen has overflow-y:auto) because its
+     gesture recognizer claims the touch for scrolling — the pointer stream
+     dies and the stick never moves. Handling raw touch events with
+     preventDefault() blocks that gesture takeover. When touch is driving,
+     pointer handlers stand down to avoid double-processing. */
+  let touchDriving = false;
+  const tpos = t => ({ x: t.clientX, y: t.clientY });
+  const stickEl = () => {
+    const s = el();
+    if (!s || s.style.display === "none" || !worldOpen()) return null;
+    return s;
+  };
+  let s0 = null;
+  function touchStart(e) {
+    const s = stickEl();
+    if (!s) return;
+    const t = [...e.changedTouches].find(t => s.contains(t.target));
+    if (!t) return;
+    touchDriving = true;
+    const p = tpos(t);
+    sx = p.x; sy = p.y; s0 = t.identifier;
+    e.preventDefault();
+  }
+  function touchMove(e) {
+    if (!touchDriving || s0 === null) return;
+    const t = [...e.changedTouches].find(t => t.identifier === s0);
+    if (!t) return;
+    e.preventDefault();
+    emit(tpos(t));
+  }
+  function touchEnd(e) {
+    if (!touchDriving || s0 === null) return;
+    if ([...e.changedTouches].some(t => t.identifier === s0)) {
+      s0 = null; touchDriving = false;
+      if (window.__stickHook) window.__stickHook(0, 0);
+      setKnob(0, 0);
+      e.preventDefault();
+    }
+  }
+  document.addEventListener("touchstart", touchStart, { passive: false });
+  document.addEventListener("touchmove", touchMove, { passive: false });
+  document.addEventListener("touchend", touchEnd, { passive: false });
+  document.addEventListener("touchcancel", touchEnd, { passive: false });
+
+
   /* show stick on any touch-capable device (iPad reports pointer:fine in some modes) */
   const touchy = "ontouchstart" in window || (navigator.maxTouchPoints || 0) > 1;
   if (touchy) {
