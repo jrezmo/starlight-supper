@@ -70,32 +70,39 @@ DATA.upgrades = [
 
 /* ---------- Enemies ---------- */
 DATA.enemies = {
-  grubble:   { name: "Grubble Pack", hp: 16, atk: [3,5], emojiKey: "grubble", loot: { glowsroom: 1 }, money: [12,20] },
-  sporeling: { name: "Angry Sporeling", hp: 22, atk: [4,7], emojiKey: "sporeling", loot: { cloudfruit: 1 }, money: [15,26] },
-  magmaw:    { name: "Magmaw Wyrmling", hp: 34, atk: [6,9], emojiKey: "magmaw", loot: { emberpepper: 1, lavasalt: 1 }, money: [26,44] },
-  ashbandit: { name: "Ash Bandit", hp: 30, atk: [5,9], emojiKey: "ashbandit", loot: { cinderfin: 1 }, money: [30,52] },
-  brinefiend:{ name: "Brine Fiend", hp: 42, atk: [7,11], emojiKey: "brine", loot: { abysskelp: 1 }, money: [38,60] },
-  tidehulk:  { name: "Tidehulk", hp: 60, atk: [9,13], emojiKey: "tidehulk", loot: { moonroe: 1 }, money: [55,85], boss: true },
-  volt:      { name: "Baron Volt", hp: 90, atk: [8,12], emojiKey: "volt", boss: true, final: true },
+  grubble:   { name: "Grubble Pack", hp: 16, atk: [3,5], emojiKey: "grubble", loot: { glowsroom: 1 }, money: [12,20], weakTag: "spicy" },
+  sporeling: { name: "Angry Sporeling", hp: 22, atk: [4,7], emojiKey: "sporeling", loot: { cloudfruit: 1 }, money: [15,26], weakTag: "savory" },
+  magmaw:    { name: "Magmaw Wyrmling", hp: 34, atk: [6,9], emojiKey: "magmaw", loot: { emberpepper: 1, lavasalt: 1 }, money: [26,44], weakTag: "seafood" },
+  ashbandit: { name: "Ash Bandit", hp: 30, atk: [5,9], emojiKey: "ashbandit", loot: { cinderfin: 1 }, money: [30,52], weakTag: "sweet" },
+  brinefiend:{ name: "Brine Fiend", hp: 42, atk: [7,11], emojiKey: "brine", loot: { abysskelp: 1 }, money: [38,60], weakTag: "earthy" },
+  tidehulk:  { name: "Tidehulk", hp: 60, atk: [9,13], emojiKey: "tidehulk", loot: { moonroe: 1 }, money: [55,85], boss: true, weakTag: "spicy" },
+  volt:      { name: "Baron Volt", hp: 90, atk: [8,12], emojiKey: "volt", boss: true, final: true, weakTag: "savory" },
 };
 
 /* ---------- Tea party rivals → become allies ---------- */
 DATA.rivals = [
   { id: "madame_vex", name: "Madame Vex", title: "Duchess of Rust & Roses", homePlanet: "verdanth",
-    hp: 24, wit: 5, difficulty: 1, emojiKey: "vex",
+    hp: 24, wit: 5, difficulty: 1, emojiKey: "vex", weakTag: "earthy",
     intro: "You dare approach my garden in travel boots? Very well — we settle this the civilized way. TEA. Delight me to 70 and I shall join your quest!",
     winLine: "Hmph. Your pour is unorthodox... and magnificent. I shall travel with you, if only to supervise.",
     allySkill: { name: "Rose Parry", desc: "Block next enemy hit & counter 4" } },
   { id: "chef_bramble", name: "Chef Bramble", title: "The Exiled Flavor-Pirate", homePlanet: "cinder",
-    hp: 32, wit: 6, difficulty: 2, emojiKey: "bramble",
+    hp: 32, wit: 6, difficulty: 2, emojiKey: "bramble", weakTag: "spicy",
     intro: "They say my lava-roux is too dangerous for polite society. Prove your palate or eat your words!",
     winLine: "You seasoned DURING my monologue?! Diabolical. I'm in. Where do we eat?",
     allySkill: { name: "Flavor Bomb", desc: "Deal 8 damage + apply -2 enemy attack" } },
   { id: "admiral_nell", name: "Admiral Nell", title: "Last Commander of Pelagia's Deep Watch", homePlanet: "pelagia",
-    hp: 44, wit: 7, difficulty: 3, emojiKey: "nell",
+    hp: 44, wit: 7, difficulty: 3, emojiKey: "nell", weakTag: "seafood",
     intro: "The Sapphire lies beneath MY trench, gourmand. Duel me — cups, not cannons. Best etiquette wins.",
     winLine: "Perfect temperature. Perfect timing. The Deep Watch follows you now, Quill.",
     allySkill: { name: "Deep Cover", desc: "Heal 8 & gain 3 block" } },
+];
+
+/* ---------- Ally Combos (WS-2) ---------- */
+DATA.allyCombos = [
+  { id: "vex_bramble_combo", name: "Flaming Rose Supper", allies: ["madame_vex", "chef_bramble"], desc: "Vex and Bramble combine for a fiery, fragrant dish.", baseDmg: 15, multiplier: 1.2, effect: { healPlayer: 5 } },
+  { id: "bramble_nell_combo", name: "Volcanic Kelp Stew", allies: ["chef_bramble", "admiral_nell"], desc: "Bramble's heat meets Nell's bounty for a spicy, deep-sea brew.", baseDmg: 18, multiplier: 1.2, effect: { enemyDebuff: -3 } },
+  { id: "vex_nell_combo", name: "Deep Forest Truffle", allies: ["madame_vex", "admiral_nell"], desc: "Vex's elegance and Nell's depth create a rich, earthy offering.", baseDmg: 12, multiplier: 1.2, effect: { block: 5 } },
 ];
 
 /* ---------- Planets ---------- */
@@ -142,3 +149,16 @@ DATA.introStory = [
   { speaker: "Oracle Worm", text: "(adjusting a tiny monocle) The plan, then: by day, cook gourmet dishes and post them on Forklore for money. By ⚡energy, expedition to each world." },
   { speaker: "Oracle Worm", text: "On each planet: befriend its champion at a TEA PARTY 🍵 — they'll reveal the vault. Open all three vaults, take the jewels... and the storm critic BARON VOLT will come for your jewels — and your table. Any questions? Good. Wear pants." },
 ];
+
+DATA.getRecipeIngredientTags = (recipeId) => {
+  const recipe = DATA.recipes.find(r => r.id === recipeId);
+  if (!recipe || !recipe.req) return [];
+  const tags = new Set();
+  for (const ingId in recipe.req) {
+    const ingredient = DATA.ingredients[ingId];
+    if (ingredient && ingredient.tags) {
+      ingredient.tags.forEach(tag => tags.add(tag));
+    }
+  }
+  return Array.from(tags);
+};

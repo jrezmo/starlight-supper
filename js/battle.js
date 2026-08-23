@@ -8,11 +8,12 @@ const Battle = (() => {
     window.__battleKind = "fight";
     window.__battleThor = !!e.final;
     B = {
-      enemyKey, ehp: e.hp, emax: e.hp,
+      enemyKey, ehp: e.hp, emax: e.hp, displayEhp: e.hp, // WS-2: Rolling HP - displayEhp init
       block: 0, charge: false, chargeEnemy: false, enemyDebuff: 0,
       over: false, onWin, onFlee, intent: rollIntent(e), alliesUsed: {},
       isThor: !!e.final, phaseIdx: 0,
     };
+    State.displayHp = State.hp; // WS-2: Rolling HP - displayHp init for player
     $("battle-log").innerHTML = "";
     log(`⚔️ ${e.name} blocks your path!`);
     showScreen("screen-battle");
@@ -21,6 +22,7 @@ const Battle = (() => {
     setArt($("player-battle-canvas"), "assets/nimbus.png", "nimbus");
     renderAlliesBar();
     updateBattleUI();
+    animateHpBars(); // WS-2: Start HP animation
     playerTurn();
   }
 
@@ -70,10 +72,43 @@ const Battle = (() => {
     renderAlliesBar(); updateBattleUI();
   }
 
+  // WS-2: Execute an ally combo
+  function executeAllyCombo(combo) {
+    if (B.over) return;
+
+    // Check if any of the allies for this combo are already used
+    const anyAllyUsed = combo.allies.some(allyId => B.alliesUsed[allyId]);
+    if (anyAllyUsed) {
+      blog(`🚫 Cannot use ${combo.name}: one or more allies already used this turn.`);
+      return;
+    }
+
+    // Mark combo allies as used for the turn
+    combo.allies.forEach(allyId => { B.alliesUsed[allyId] = true; });
+
+    let dmg = Math.round(combo.baseDmg * combo.multiplier);
+    blog(`✨ ${combo.name}! You deal <b>${dmg}</b> damage.`);
+    dealEnemy(dmg);
+
+    // Apply additional effects
+    if (combo.effect) {
+      if (combo.effect.healPlayer) { healPlayer(combo.effect.healPlayer); blog(`❤️ You heal for ${combo.effect.healPlayer} HP!`); }
+      if (combo.effect.enemyDebuff) { B.enemyDebuff += combo.effect.enemyDebuff; blog(`📉 Enemy attack reduced by ${Math.abs(combo.effect.enemyDebuff)}!`); }
+      if (combo.effect.block) { B.block += combo.effect.block; blog(`🛡️ You gain ${combo.effect.block} block!`); }
+    }
+    AudioSys.good(); Chip.combo(); // Assuming Chip.combo() exists
+    endPlayerAction();
+  }
+
   function blog(m) { log(m, "battle-log"); }
-  function healPlayer(n) { State.hp = clamp(State.hp + n, 0, State.maxHp); AudioSys.heal(); }
+  function healPlayer(n) {
+    State.hp = clamp(State.hp + n, 0, State.maxHp);
+    State.displayHp = State.hp; // Update display HP instantly on heal for now, will animate later
+    AudioSys.heal();
+  }
   function dealEnemy(n) {
     B.ehp -= n;
+    B.displayEhp = B.ehp; // Update display HP instantly on damage for now, will animate later
     const holder = $("enemy-canvas").parentElement;
     holder.classList.remove("flash-dmg"); void holder.offsetWidth; holder.classList.add("flash-dmg");
     AudioSys.hit(); Chip.hitStinger();
@@ -92,11 +127,11 @@ const Battle = (() => {
   function updateBattleUI() {
     const e = DATA.enemies[B.enemyKey];
     $("enemy-name").textContent = e.name;
-    $("enemy-hp").style.width = clamp(B.ehp / B.emax * 100, 0, 100) + "%";
-    $("enemy-hp-text").textContent = `${Math.max(0, B.ehp)}/${B.emax}`;
+    $("enemy-hp").style.width = clamp(B.displayEhp / B.emax * 100, 0, 100) + "%"; // WS-2: Use displayEhp
+    $("enemy-hp-text").textContent = `${Math.max(0, Math.round(B.displayEhp))}/${B.emax}`;
     $("enemy-intent").textContent = B.over ? "" : intentText();
-    $("player-hp").style.width = clamp(State.hp / State.maxHp * 100, 0, 100) + "%";
-    $("player-hp-text").textContent = `${State.hp}/${State.maxHp}`;
+    $("player-hp").style.width = clamp(State.displayHp / State.maxHp * 100, 0, 100) + "%"; // WS-2: Use displayHp
+    $("player-hp-text").textContent = `${Math.max(0, Math.round(State.displayHp))}/${State.maxHp}`;
     $("player-buffs").textContent =
       (B.block ? (B.block > 50 ? "🛡️ parry ready " : `🛡️${B.block} `) : "") +
       (B.charge ? "⚡charged " : "") + (B.enemyDebuff ? `foe atk ${B.enemyDebuff}` : "");
@@ -105,10 +140,14 @@ const Battle = (() => {
   function playerTurn() {
     if (B.over) return;
     const actions = $("battle-actions"); actions.innerHTML = "";
+
+    const weaknessMultiplier = getPlayerDishWeaknessMultiplier();
+
     mkBtn(actions, "⚔️ Strike", "btn-primary", () => {
       let dmg = rand(4, 7) + (B.charge ? 6 : 0);
-      if (B.charge) { blog(`⚡ RELEASE! Star-charged strike for <b>${dmg}</b>!`); Chip.thunder(); }
-      else blog(`⚔️ You strike for <b>${dmg}</b>.`);
+      dmg = Math.round(dmg * weaknessMultiplier); // Apply weakness multiplier
+      if (B.charge) { blog(`⚡ RELEASE! Star-charged strike for <b>${dmg}</b>! (x${weaknessMultiplier} Weakness!)`); Chip.thunder(); }
+      else blog(`⚔️ You strike for <b>${dmg}</b>! (x${weaknessMultiplier} Weakness!)`);
       dealEnemy(dmg);
       endPlayerAction();
     });
@@ -116,6 +155,16 @@ const Battle = (() => {
       B.charge = true; blog(`⚡ You channel starlight into your spatula...`);
       endPlayerAction();
     }, B.charge);
+
+    // WS-2: Ally Combos
+    getActiveAllyCombos().forEach(combo => {
+      // Check if allies required for this combo are already used this turn
+      const isUsed = combo.allies.some(allyId => B.alliesUsed[allyId]);
+      mkBtn(actions, `✨ ${combo.name} (${combo.allies.map(id => DATA.rivals.find(r => r.id === id).emojiKey).join('')})`, "btn-purple", () => {
+        executeAllyCombo(combo);
+      }, isUsed);
+    });
+
     Object.entries(State.dishes).forEach(([id, n]) => {
       if (n <= 0) return;
       const r = DATA.recipes.find(x => x.id === id);
@@ -222,15 +271,81 @@ const Battle = (() => {
   function loseBattle() {
     B.over = true;
     Chip.defeatSting();
-    setTimeout(() => Story.show("💀", [
-      { speaker: "", text: "Everything goes starry. You wake at your shelter, worm-monitored and bandaged. Half your money paid the medical worms." },
-    ], () => {
-      State.hp = Math.max(1, Math.round(State.maxHp * .5));
-      State.money = Math.round(State.money * .7);
-      State.planet = null;
-      window.__battleThor = false;
-      updateHUD(); Hub.open();
-    }), 600);
+
+    if (B.enemyKey === "volt") {
+      // WS-2: Tiered defeat vs Volt
+      let lostJewel = null;
+      if (State.jewels.length > 0) {
+        const randomIndex = Math.floor(Math.random() * State.jewels.length);
+        lostJewel = State.jewels.splice(randomIndex, 1)[0]; // Remove a random jewel
+      }
+      const jewelText = lostJewel ? `You lost the ${DATA.jewels[lostJewel]}! You must re-win it.` : "Your jewels remain untouched, for now...";
+
+      setTimeout(() => Story.show("😬", [
+        { speaker: "BARON VOLT", text: "Hmph. A mere setback, culinary cadet. Your efforts are... adorable. The galaxy shall hear of this." },
+        { speaker: "", text: `You wake at your shelter, tasting defeat. Baron Volt has posted a mocking Forklore thread. ${jewelText}` },
+      ], () => {
+        State.hp = Math.max(1, Math.round(State.maxHp * .5)); // Still some HP loss
+        State.money = Math.round(State.money * .7); // Still some money loss
+        State.planet = null;
+        window.__battleThor = false;
+        updateHUD(); Hub.open();
+      }), 600);
+
+    } else { // Generic lose battle for other enemies
+      setTimeout(() => Story.show("💀", [
+        { speaker: "", text: "Everything goes starry. You wake at your shelter, worm-monitored and bandaged. Half your money paid the medical worms." },
+      ], () => {
+        State.hp = Math.max(1, Math.round(State.maxHp * .5));
+        State.money = Math.round(State.money * .7);
+        State.planet = null;
+        window.__battleThor = false;
+        updateHUD(); Hub.open();
+      }), 600);
+    }
+  }
+
+  // WS-2: Rolling HP Animation Loop
+  function animateHpBars() {
+    if (!B || B.over) { // Stop animating if battle is over or not active
+      window.cancelAnimationFrame(B.hpAnimFrame);
+      B.hpAnimFrame = null;
+      return;
+    }
+
+    const speed = 0.08;
+    if (window.__battleKind === "fight") {
+      B.displayEhp += (B.ehp - B.displayEhp) * speed;
+      State.displayHp += (State.hp - State.displayHp) * speed;
+      if (Math.abs(B.ehp - B.displayEhp) < 0.1) B.displayEhp = B.ehp; // Snap to target
+      if (Math.abs(State.hp - State.displayHp) < 0.1) State.displayHp = State.hp; // Snap to target
+    } else if (window.__battleKind === "tea") {
+      T.displayDelight += (T.delight - T.displayDelight) * speed;
+      if (Math.abs(T.delight - T.displayDelight) < 0.1) T.displayDelight = T.delight; // Snap to target
+    }
+
+    // Only update UI if there's a significant difference or it's snapped to target
+    if (B.displayEhp !== B.ehp || State.displayHp !== State.hp) {
+      updateBattleUI(); // This function will be modified to use displayHps
+    }
+
+    B.hpAnimFrame = window.requestAnimationFrame(animateHpBars);
+  }
+
+  // WS-2: Rival Palate Weaknesses - Check player's dishes for a weakness match
+  function getPlayerDishWeaknessMultiplier() {
+    const enemy = DATA.enemies[B.enemyKey];
+    if (!enemy || !enemy.weakTag) return 1.0;
+
+    for (const dishId in State.dishes) {
+      if (State.dishes[dishId] > 0) { // If player has at least one of this dish
+        const recipeTags = DATA.getRecipeIngredientTags(dishId);
+        if (recipeTags.includes(enemy.weakTag)) {
+          return 1.5;
+        }
+      }
+    }
+    return 1.0;
   }
 
   return { start };
@@ -250,7 +365,7 @@ const TeaParty = (() => {
       ], () => { updateHUD(); (onDone || (() => Hub.open()))(true); });
       return;
     }
-    T = { rv, delight: 20, target: 70, fauxPas: 0, over: false, onDone, round: 1 };
+    T = { rv, delight: 20, target: 70, displayDelight: 20, fauxPas: 0, over: false, onDone, round: 1 }; // WS-2: Rolling HP - displayDelight init
     Story.show("🍵", [
       { speaker: "", text: `An engraved invitation materializes: "You are cordially DUEL-challenged."` },
       { speaker: rv.name, text: rv.intro },
@@ -266,6 +381,7 @@ const TeaParty = (() => {
     log(`🍵 Tea party vs ${T.rv.name}!`, "battle-log");
     showScreen("screen-battle");
     renderActions(); updateUI();
+    animateHpBars(); // WS-2: Start animation for Tea Party
   }
 
   function setRivalArt() {
@@ -286,8 +402,8 @@ const TeaParty = (() => {
   }
 
   function updateUI() {
-    $("enemy-hp").style.width = clamp(T.delight / T.target * 100, 0, 100) + "%";
-    $("enemy-hp-text").textContent = `Delight ${T.delight}/${T.target}`;
+    $("enemy-hp").style.width = clamp(T.displayDelight / T.target * 100, 0, 100) + "%"; // WS-2: Use displayDelight
+    $("enemy-hp-text").textContent = `Delight ${Math.round(T.displayDelight)}/${T.target}`;
     $("enemy-intent").textContent = `Faux Pas: ${"💥".repeat(T.fauxPas) || "none"} · Round ${T.round}`;
     $("player-hp").style.width = clamp(State.hp / State.maxHp * 100, 0, 100) + "%";
     $("player-hp-text").textContent = `${State.hp}/${State.maxHp}`;
@@ -307,20 +423,34 @@ const TeaParty = (() => {
     });
   }
 
+  function getRandomDishTag() {
+    const tags = ["sweet", "spicy", "savory", "seafood", "earthy"]; // All possible dish tags
+    return pick(tags);
+  }
+
   function doMove(m) {
     if (T.over) return;
     if (chance(m.risk)) {
       T.fauxPas++;
       T.delight = Math.max(0, T.delight - rand(4, 8));
+      T.displayDelight = T.delight; // Update display instantly for now
       AudioSys.bad(); Chip.fauxPas();
       log(`💥 FAUX PAS (${T.fauxPas}/4)! ${pick(["Your pinky betrays you.", "You slurp audibly. A pin drops.", "Wrong spoon. THE WRONG SPOON.", "You called it 'chai'. It was not chai."])}`, "battle-log");
       $("player-battle-canvas").parentElement.classList.add("shake");
       setTimeout(() => $("player-battle-canvas").parentElement.classList.remove("shake"), 450);
     } else {
-      const g = rand(m.gain[0], m.gain[1]);
+      let g = rand(m.gain[0], m.gain[1]);
+      // WS-2: Rival palate weaknesses (simplified for Tea Party)
+      const servedTag = getRandomDishTag();
+      if (T.rv.weakTag && servedTag === T.rv.weakTag) {
+        g = Math.round(g * 1.5);
+        log(`☕ +${g} Delight (WEAKNESS HIT!) (${T.delight}/${T.target})! ${m.flavor}`, "battle-log");
+      } else {
+        log(`☕ +${g} Delight (${T.delight}/${T.target})! ${m.flavor}`, "battle-log");
+      }
       T.delight = Math.min(T.target, T.delight + g);
+      T.displayDelight = T.delight; // Update display instantly for now
       AudioSys.good(); Chip.delightBurst(Math.floor(T.delight / 20));
-      log(`☕ +${g} Delight (${T.delight}/${T.target})! ${m.flavor}`, "battle-log");
     }
     T.round++; updateUI();
     if (T.delight >= T.target) return win();
