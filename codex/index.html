@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Supper Codex — Starlight Supper Official Lore & Strategy Compendium</title>
+<meta name="description" content="The official fanzine for Starlight Supper: lore chapters, world dossiers, character deep-dives, bestiary field notes, the recipe codex, tips & tricks, and a full walkthrough.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🍲</text></svg>">
+<style>
+  :root{
+    --bg:#0b0e1a; --panel:#131730; --panel2:#1a1f3d; --ink:#e8e4d8; --dim:#9a94b8;
+    --gold:#ffd76b; --rose:#ffb3d9; --ember:#ff8a5c; --tide:#6cb8ff; --moss:#7de08a; --vess:#c9b8ff;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--ink);font-family:Georgia,'Times New Roman',serif;line-height:1.65}
+  code,.mono{font-family:'SF Mono',Consolas,monospace;font-size:.9em}
+  a{color:var(--gold)}
+  .wrap{max-width:900px;margin:0 auto;padding:0 20px}
+  header.hero{text-align:center;padding:70px 20px 40px;background:
+    radial-gradient(ellipse at 50% -10%, #2a2460 0%, var(--bg) 60%);}
+  .hero h1{font-size:clamp(2.2rem,6vw,3.6rem);letter-spacing:.12em;color:var(--gold);text-transform:uppercase;line-height:1.1}
+  .hero .sub{color:var(--vess);font-style:italic;font-size:1.15rem;margin:.5rem 0 0}
+  .hero .issue{margin-top:14px;font-family:inherit;color:var(--dim);font-size:.85rem;letter-spacing:.2em;text-transform:uppercase}
+  .hero img.splash{max-width:420px;width:80%;border-radius:12px;margin:26px auto 8px;display:block;border:1px solid #3a3a66;box-shadow:0 8px 40px rgba(255,215,107,.15)}
+  .playbtn{display:inline-block;margin-top:18px;background:var(--gold);color:#1a1400;font-weight:bold;text-decoration:none;padding:13px 34px;border-radius:999px;font-family:Arial,sans-serif;font-size:1.05rem;box-shadow:0 4px 24px rgba(255,215,107,.35);transition:transform .15s}
+  .playbtn:hover{transform:scale(1.05)}
+  nav.toc{background:var(--panel);border-top:1px solid #2a2a50;border-bottom:1px solid #2a2a50;padding:14px 0;position:sticky;top:0;z-index:9}
+  nav.toc .wrap{display:flex;gap:6px;flex-wrap:wrap;justify-content:center}
+  nav.toc a{color:var(--dim);text-decoration:none;font-family:Arial,sans-serif;font-size:.82rem;padding:6px 12px;border-radius:999px}
+  nav.toc a:hover{background:var(--panel2);color:var(--gold)}
+  section{padding:56px 0;border-bottom:1px dashed #2a2a50}
+  section:last-of-type{border-bottom:none}
+  h2.chapter{font-size:1.9rem;color:var(--gold);margin-bottom:6px;letter-spacing:.04em}
+  h2.chapter::before{content:"§ ";color:var(--dim)}
+  .kicker{color:var(--dim);font-family:Arial,sans-serif;font-size:.75rem;letter-spacing:.25em;text-transform:uppercase;margin-bottom:16px}
+  h3{color:var(--rose);margin:26px 0 8px;font-size:1.25rem}
+  p{margin-bottom:14px;max-width:70ch}
+  .dropcap::first-letter{font-size:3.2em;float:left;line-height:.85;padding-right:10px;color:var(--gold)}
+  blockquote{border-left:3px solid var(--gold);padding:8px 18px;margin:18px 0;font-style:italic;color:var(--vess);background:rgba(201,184,255,.05)}
+  .cardgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:16px;margin:22px 0}
+  .card{background:var(--panel);border:1px solid #2a2a50;border-radius:12px;padding:20px}
+  .card img{width:100%;border-radius:8px;margin-bottom:12px;aspect-ratio:1;object-fit:cover;background:#000}
+  .card h4{color:var(--gold);font-size:1.1rem;margin-bottom:2px}
+  .card .title{color:var(--rose);font-style:italic;font-size:.85rem;margin-bottom:8px}
+  .card p{font-size:.92rem;margin:0;color:var(--dim)}
+  .card.moss{border-top:3px solid var(--moss)} .card.ember{border-top:3px solid var(--ember)} .card.tide{border-top:3px solid var(--tide)}
+  table{width:100%;border-collapse:collapse;margin:18px 0;font-size:.95rem}
+  th{color:var(--gold);text-align:left;border-bottom:2px solid var(--gold);padding:8px 10px;font-family:Arial,sans-serif;font-size:.85rem}
+  td{padding:8px 10px;border-bottom:1px solid #22224a;vertical-align:top}
+  td:first-child{white-space:nowrap}
+  .tip{background:var(--panel2);border-radius:10px;padding:16px 20px;margin:14px 0;border-left:4px solid var(--moss)}
+  .tip b{color:var(--moss)}
+  .warn{border-left-color:var(--ember)} .warn b{color:var(--ember)}
+  .step{display:flex;gap:16px;margin:14px 0}
+  .step .n{flex-shrink:0;width:34px;height:34px;border-radius:50%;background:var(--gold);color:#1a1400;display:flex;align-items:center;justify-content:center;font-weight:bold;font-family:Arial,sans-serif}
+  footer{text-align:center;padding:40px 20px;color:var(--dim);font-size:.85rem}
+  .divider{text-align:center;color:var(--dim);letter-spacing:1em;padding:10px 0;font-size:.8rem}
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <h1>The Supper Codex</h1>
+  <p class="sub">Lore · Worlds · Dossiers · Field Notes · Strategy — The Unofficial-Official Starlight Supper Fanzine</p>
+  <img class="splash" src="assets/title.png" alt="Starlight Supper title art">
+  <div class="issue">Issue №1 · Vessari Gourmand Nomads Press · Free forever</div>
+  <a class="playbtn" href="https://game.asimplenoise.com">▶ Play Starlight Supper</a>
+</header>
+
+<nav class="toc"><div class="wrap">
+  <a href="#lore">The Sundering</a><a href="#nimbus">Nimbus Quill</a><a href="#worlds">Worlds</a>
+  <a href="#rivals">Rivals & Allies</a><a href="#volt">Baron Volt</a><a href="#bestiary">Bestiary</a>
+  <a href="#recipes">Recipe Codex</a><a href="#worms">The Wormery</a><a href="#tips">Tips & Tricks</a><a href="#walkthrough">Walkthrough</a>
+</div></nav>
+
+<div class="wrap">
+
+<!-- ============ LORE ============ -->
+<section id="lore">
+  <div class="kicker">Chapter One · Deep Lore</div>
+  <h2 class="chapter">The Sundering, and the Kettle That Remembers</h2>
+  <p class="dropcap">Three hundred years ago, the Great Kettle — the cosmic hearth that simmered the First Broth of the Cosmos — went cold. The stars went quiet. The broth went bland. Historians call it <em>the Sundering</em>. Gourmands call it the day the galaxy forgot what dinner was supposed to taste like.</p>
+  <p>Before the Sundering, the Vessari Gourmand Nomads kept the Kettle burning. It was said to flame not on wood or plasma, but on three jewels: the <strong style="color:var(--ember)">Hearthstone Ruby</strong>, the <strong style="color:var(--tide)">Abyssal Sapphire</strong>, and the <strong style="color:var(--moss)">Gale Emerald</strong> — one hidden on each of three worlds, each guarded by a champion of formidable manners.</p>
+  <p>When the jewels were scattered and sealed in their vaults, the Kettle cooled, and the age of flavor ended. Flavor did not die all at once. It faded — like a recipe retold too many times by people who never tasted the original.</p>
+  <blockquote>"Grandmother said the Kettle burned on three jewels... She drew them on a napkin. We still have the napkin." — Nimbus Quill</blockquote>
+  <p>This is where you come in. One rustbucket ship. A family of worms with strong opinions. And a napkin.</p>
+</section>
+
+<section id="nimbus">
+  <div class="kicker">Dossier · The Protagonist</div>
+  <h2 class="chapter">Nimbus Quill, Last of the Vessari</h2>
+  <div class="cardgrid" style="grid-template-columns:220px 1fr;align-items:start">
+    <div class="card"><img src="assets/nimbus.png" alt="Nimbus Quill"></div>
+    <div>
+      <p>Inheritor of her grandmother's recipes, one barely-spaceworthy ship, and a wormery full of creatures who believe — correctly — that they are the smartest ones aboard. Nimbus cooks first and asks questions during. Her signature dish, the <em>First Broth of the Cosmos</em>, is less a recipe than an inheritance: "The Kettle remembers it."</p>
+      <p>She posts her dishes on <strong>Forklore</strong>, the galaxy's food-social network, because fame is fuel and likes are money. Twelve followers became four hundred. Four hundred became a movement. Baron Volt noticed. That was either the best or worst thing that ever happened to her.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ WORLDS ============ -->
+<section id="worlds">
+  <div class="kicker">World Dossiers · Field Survey</div>
+  <h2 class="chapter">Three Worlds, Three Jewels</h2>
+  <div class="cardgrid">
+    <div class="card moss">
+      <img src="assets/verdanth.png" alt="Verdanth">
+      <h4>Verdanth</h4><div class="title">A mossy super-garden where every plant is faintly musical</div>
+      <p>Forests hum in major keys. Ingredient groves grow Starbloom Nectar, Glowsroom, and Cloudfruit. Home of Madame Vex, Duchess of Rust &amp; Roses, who judges your table manners before your courage. Jewel: the Hearthstone Ruby. Travel advisory: wear better boots than you think you need.</p>
+    </div>
+    <div class="card ember">
+      <img src="assets/cinder.png" alt="Cinder Reach">
+      <h4>Cinder Reach</h4><div class="title">Volcanic archipelagos — the food is spicy because everything is literally on fire</div>
+      <p>Always too hot for soup. Emberpepper grows wild, Lavasalt is harvested from cooling flows, and Cinderfin swim happily in water that would poach them from below if they stood still. Home of Chef Bramble, the Exiled Flavor-Pirate. Jewel: the Gale Emerald.</p>
+    </div>
+    <div class="card tide">
+      <img src="assets/pelagia.png" alt="Pelagia">
+      <h4>Pelagia</h4><div class="title">One world-ocean, lit from below by cities of the Deep Watch</div>
+      <p>Abysskelp forests, Pearlroot beds, and Moonroe herds on the shelf lands. The Deep Watch keeps its lamps on for sailors who'll never need them again. Home of Admiral Nell, Last Commander of Pelagia's Deep Watch. Jewel: the Abyssal Sapphire, which lies beneath HER trench, thank you very much.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ RIVALS ============ -->
+<section id="rivals">
+  <div class="kicker">Character Dossiers · Tea, Not War</div>
+  <h2 class="chapter">Every Rival Can Be Beaten at a Tea Party</h2>
+  <p>The Vessari way is not conquest. Each world's champion cannot be defeated by force — only <em>delighted</em>. Win the duel of etiquette and they don't just yield: they join you, bringing a signature skill into every battle thereafter.</p>
+  <div class="cardgrid">
+    <div class="card moss">
+      <img src="assets/madame_vex.png" alt="Madame Vex">
+      <h4>Madame Vex</h4><div class="title">Duchess of Rust &amp; Roses · Verdanth</div>
+      <p>"You dare approach my garden in travel boots? Very well — we settle this the civilized way. TEA."</p><p>Delight her to 70 and she joins with <b>Rose Parry</b>: blocks the next enemy hit and counters for 4. She travels with you "if only to supervise." She has been supervising ever since.</p>
+    </div>
+    <div class="card ember">
+      <img src="assets/chef_bramble.png" alt="Chef Bramble">
+      <h4>Chef Bramble</h4><div class="title">The Exiled Flavor-Pirate · Cinder Reach</div>
+      <p>"They say my lava-roux is too dangerous for polite society. Prove your palate or eat your words!"</p><p>Beat him and he declares you "diabolical" for seasoning during his monologue — the highest compliment he knows. Ally skill: <b>Flavor Bomb</b>, 8 damage plus a −2 attack debuff.</p>
+    </div>
+    <div class="card tide">
+      <img src="assets/admiral_nell.png" alt="Admiral Nell">
+      <h4>Admiral Nell</h4><div class="title">Last Commander of the Deep Watch · Pelagia</div>
+      <p>"The Sapphire lies beneath MY trench, gourmand. Duel me — cups, not cannons. Best etiquette wins."</p><p>Pour at perfect temperature and perfect timing and the entire Deep Watch follows you. Ally skill: <b>Deep Cover</b> — heal 8 and gain 3 block when things go wrong. Things go wrong.</p>
+    </div>
+  </div>
+</section>
+
+<section id="volt">
+  <div class="kicker">Final Boss · Storm-Food Critic</div>
+  <h2 class="chapter">Baron Volt, the Galaxy's Grumpiest Critic</h2>
+  <div class="cardgrid" style="grid-template-columns:220px 1fr;align-items:start">
+    <div class="card ember"><img src="assets/volt.png" alt="Baron Volt"></div>
+    <div>
+      <p>He wears the Gale Emerald as a belt buckle. He insists it "matched nothing." When Nimbus collects all three jewels, the Baron descends personally — not to destroy her, but to review her. Permanently. His three-phase assault escalates through <em>The Storm Course</em>:</p>
+      <blockquote>"A RESERVATION? For ME? You found all three jewels — now let us see if your TASTE is real!"<br>— opening line, Table of Baron Volt</blockquote>
+      <p>At two-thirds health: <em>"Impressive palate, tiny chef. But can you weather THE STORM COURSE?"</em> At one quarter: he stops holding back his hospitality entirely. Bring allies. Bring broth. Wear pants.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============ BESTIARY ============ -->
+<section id="bestiary">
+  <div class="kicker">Field Notes · Hostile Lifeforms</div>
+  <h2 class="chapter">The Bestiary</h2>
+  <p>Compiled from expedition logs. Threat ratings reflect both combat danger <em>and</em> how personally they take being cooked.</p>
+  <table>
+    <tr><th>Lifeform</th><th>Homeworld</th><th>Threat</th><th>Field Notes</th></tr>
+    <tr><td>🦀 Grubble Pack</td><td>Verdanth</td><td>Low</td><td>Hunt in scuttling packs. Drop Glowsroom. More annoyed than dangerous, but there are always more of them.</td></tr>
+    <tr><td>🍄 Angry Sporeling</td><td>Verdanth / Cinder</td><td>Low-Med</td><td>A mushroom with a grudge. Drops Cloudfruit. The anger is proportional to how close you are standing.</td></tr>
+    <tr><td>🏴‍☠️ Ash Bandit</td><td>Cinder Reach / Pelagia</td><td>Medium</td><td>Volcanic highwaymen. Well-organized for someone made of cinders.</td></tr>
+    <tr><td>🐉 Magmaw Wyrmling</td><td>Cinder Reach</td><td>Medium-High</td><td>Juvenile magma serpent. The wyrmling stage is the polite stage.</td></tr>
+    <tr><td>🌊 Brine Fiend</td><td>Pelagia</td><td>Medium-High</td><td>Drops Abysskelp. Smells like regret pickled in ocean.</td></tr>
+    <tr><td>🐋 Tidehulk <em>(boss)</em></td><td>Pelagia</td><td>High</td><td>Guardian of the trench shelf. Drops Moonroe. The Deep Watch pretends it can control it. It cannot.</td></tr>
+  </table>
+  <div class="tip"><b>Field note:</b> Every hostile drops ingredients or coin worth the fight — expeditions aren't just survival, they're grocery runs with teeth.</div>
+</section>
+
+<!-- ============ RECIPES ============ -->
+<section id="recipes">
+  <div class="kicker">The Recipe Codex · From the Grandmother's Napkin</div>
+  <h2 class="chapter">Seven Dishes Worth Rekindling a Cosmos For</h2>
+  <table>
+    <tr><th>Dish</th><th>Ingredients</th><th>Likes</th><th>Lore</th></tr>
+    <tr><td>🍮 Starbloom Foam w/ Glowsroom Dust</td><td>2× Starbloom, 1× Glowsroom</td><td>14</td><td>"A dessert that hums when the spoon touches it."</td></tr>
+    <tr><td>🥧 Cloudfruit Tart, Lavasalt Crust</td><td>Cloudfruit + Lavasalt</td><td>—</td><td>"Sweet as a rumor, sharp as a goodbye."</td></tr>
+    <tr><td>🍤 Ember-Cured Cinderfin Ceviche</td><td>Cinderfin + Emberpepper</td><td>—</td><td>"Cooked by anger alone. Serve cold to confuse everyone."</td></tr>
+    <tr><td>🍚 Abysskelp Risotto, Pearlroot Chip</td><td>Abysskelp + Pearlroot</td><td>—</td><td>"The deep sea's apology for everything down there."</td></tr>
+    <tr><td>🥩 Moonroe Wellington in Starbloom Jus</td><td>Moonroe + Starbloom</td><td>—</td><td>"The dish that ended a 300-year feud on Verdanth. Twice."</td></tr>
+    <tr><td>🍲 <strong>First Broth of the Cosmos</strong></td><td>Moonroe + Pearlroot + Vermicelli Caviar</td><td>90</td><td>"Nimbus's grandmother's recipe. The Kettle remembers it." Difficulty: ★★★★★</td></tr>
+  </table>
+  <blockquote>"Sweet as a rumor, sharp as a goodbye" is the single greatest menu description in three galaxies. Madame Vex had it engraved above her garden gate. — Forklore reviewer ★★★★★</blockquote>
+</section>
+
+<!-- ============ WORMS ============ -->
+<section id="worms">
+  <div class="kicker">Husbandry Guide · Strong Opinions Included</div>
+  <h2 class="chapter">The Wormery: Your Smartest Crew Members</h2>
+  <p>Nimbus's worms are not bait. They are colleagues. Bred in the Wormery Wings, each carries a trait that shapes the whole voyage:</p>
+  <table>
+    <tr><th>Worm Trait</th><th>Effect</th><th>Who Needs It</th></tr>
+    <tr><td>✨ Shimmerback</td><td>+15% Forklore likes</td><td>Everyone. Always. Non-negotiable.</td></tr>
+    <tr><td>🍽️ Gourmand Grub</td><td>+1 luxury ingredient per day</td><td>Chefs chasing the First Broth</td></tr>
+    <tr><td>🔮 Oracle Worm</td><td>Reveals map nodes at night</td><td>Expedition planners (see the Oracle Worm himself)</td></tr>
+    <tr><td>🧠 Philosopher Worm</td><td>+2 max HP each dawn</td><td>Anyone meeting Baron Volt on purpose</td></tr>
+  </table>
+  <p>Vermicelli Caviar — wormgold, value 20 — is the only luxury ingredient that grows nowhere. It is produced exclusively by worms who know exactly how valuable they are. Rarity tiers run Common → Rare → beyond; breed carefully and speak respectfully.</p>
+  <blockquote>"The plan, then: by day, cook gourmet dishes and post them on Forklore for money. By ⚡energy, expedition to each world." — The Oracle Worm, adjusting a tiny monocle</blockquote>
+</section>
+
+<!-- ============ TIPS ============ -->
+<section id="tips">
+  <div class="kicker">Strategy · Nintendo Power Style</div>
+  <h2 class="chapter">Tips &amp; Tricks — Counsel of the Codex</h2>
+
+  <div class="tip"><b>Energy is the real currency.</b> Money comes back, HP regenerates, but each day gives limited ⚡. Before spending energy, ask: does this make money (cook/post), strength (wormery/shelter), or progress (expedition)? Never spend a third energy on something a second could do.</div>
+
+  <div class="tip"><b>Post to Forklore every single day.</b> Even a modest dish posted daily outpaces occasional masterpieces — follower growth compounds, and followers are your long-term income. The Studio upgrade boosts post earnings +30%/level. Buy it earlier than feels reasonable.</div>
+
+  <div class="tip warn"><b>Breed a Shimmerback first.</b> +15% likes applies to EVERYTHING you post, forever. It's the highest compounding return in the game. Oracle Worm second if you struggle with night navigation.</div>
+
+  <div class="tip"><b>Fight everything on expedition routes.</b> Enemies drop ingredients AND pay you for the privilege. A Grubble Pack is 12–20 coins plus a free Glowsroom walking toward you. Expeditions should ideally pay for themselves.</div>
+
+  <div class="tip"><b>Save the Observatory upgrade for before Pelagia.</b> Night nodes and jewel clues revealed make the trench far less lethal. Seeing extra nodes at night turns blind wandering into planned routes.</div>
+
+  <div class="tip warn"><b>Tea parties scale — come prepared.</b> Madame Vex (wit 5) is gentle. Admiral Nell (wit 7) will end you if you arrive with a low-tier dish. Cook your best available recipe BEFORE accepting a tea invitation, not after losing to it.</div>
+
+  <div class="tip"><b>Allies stack.</b> Each befriended rival fights beside you with their signature skill. Rose Parry's counter, Flavor Bomb's debuff, and Deep Cover's heal cover offense, offense-denial, and recovery. Get all three before the final duel — Volt's Storm Course assumes you won't.</div>
+
+  <div class="tip warn"><b>For Baron Volt:</b> stock First Broth ingredients (Moonroe, Pearlroot, Vermicelli Caviar) BEFORE the third vault. Once he arrives, shopping trips are over. A few Philosopher Worm dawns (+2 max HP each) turn his burst phases into math you survive.</div>
+</section>
+
+<!-- ============ WALKTHROUGH ============ -->
+<section id="walkthrough">
+  <div class="kicker">Full Walkthrough · Spoiler-Light Then Spoiler-Heavy</div>
+  <h2 class="chapter">From Cold Kettle to Cosmic Broth</h2>
+
+  <h3>Act I — Foundation (Days 1–5)</h3>
+  <div class="step"><div class="n">1</div><div><strong>Learn the loop.</strong> Cook your easiest recipes, post everything to Forklore, spend leftover energy gathering. Goal: steady coin flow and first follower milestones.</div></div>
+  <div class="step"><div class="n">2</div><div><strong>Invest in the Wormery early.</strong> Breed toward a Shimmerback. Every day without one is compound interest lost.</div></div>
+  <div class="step"><div class="n">3</div><div><strong>First expedition: Verdanth.</b></strong> Gentle enemies (Grubbles, Sporelings), three ingredient types, and Madame Vex waiting at tea. Fight along the route — loot funds the next upgrade.</div></div>
+
+  <h3>Act II — The Champions (Days 6–15)</h3>
+  <div class="step"><div class="n">4</div><div><strong>Win Vex's tea party.</strong> Bring your best dessert-tier dish. Rose Parry joins your battles — immediately noticeable survivability.</div></div>
+  <div class="step"><div class="n">5</div><div><strong>Cinder Reach.</strong> Harder enemies, hotter everything. Chef Bramble's duel rewards bold cooking — Flavor Bomb makes short work of Magmaws. Claim the Gale Emerald's vault location.</div></div>
+  <div class="step"><div class="n">6</div><div><strong>Pelagia last.</strong> Tidehulks hit hard. Bring the Observatory online first, breed Oracle Worm if nights keep surprising you, then face Admiral Nell with dignity and a top-shelf risotto. Deep Cover is the best insurance policy in the game.</div></div>
+
+  <h3>Act III — The Storm Course</h3>
+  <div class="step"><div class="n">7</div><div><strong>Open all three vaults.</strong> Hearthstone Ruby, Gale Emerald, Abyssal Sapphire. The moment the third jewel leaves its vault, the sky changes.</div></div>
+  <div class="step"><div class="n">8</div><div><strong>Prepare the final table.</strong> All three allies, Philosopher Worm HP banked, First Broth ingredients stocked. This is not optional prep — Volt's phase three stops holding back his hospitality.</div></div>
+  <div class="step"><div class="n">9</div><div><strong>Rekindle the Kettle.</strong> Cook the First Broth of the Cosmos. Serve. Whatever happens next, the galaxy eats well tonight.</div></div>
+  <blockquote>"Wear pants." — The Oracle Worm, closing the briefing</blockquote>
+</section>
+
+<footer>
+  <div class="divider">🍲 🛸 🍲</div>
+  <p>The Supper Codex · Issue №1 · Published by the Vessari Gourmand Nomads Press<br>
+  Fan-maintained companion to <a href="https://game.asimplenoise.com">Starlight Supper</a> · Code &amp; game on <a href="https://github.com/jrezmo/starlight-supper">GitHub</a><br>
+  <em>Cook well. The Kettle remembers.</em></p>
+</footer>
+
+</div>
+</body>
+</html>
