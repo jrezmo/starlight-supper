@@ -7,6 +7,9 @@ const Story = (() => {
     queue = Array.isArray(lines) ? lines : [lines];
     idx = 0; cb = onDone || null; icon = iconEmoji || "";
     $("overlay-story").classList.remove("hidden");
+    // WS-11: gentle animated scene behind the story card
+    const sc = document.getElementById("story-scene");
+    if (sc && typeof Art !== "undefined" && Art.startScene) Art.startScene(sc, { density: .5 });
     document.querySelectorAll(".story-choices").forEach(e => e.remove());
     $("story-next").style.display = "";
     const sp = queue[0].speaker;
@@ -34,6 +37,8 @@ const Story = (() => {
   function next() {
     idx++;
     if (idx >= queue.length) {
+      const sc = document.getElementById("story-scene");
+      if (sc && typeof Art !== "undefined" && Art.stopScene) Art.stopScene(sc);
       $("overlay-story").classList.add("hidden");
       const f = cb; cb = null;
       if (f) f();

@@ -42,10 +42,14 @@ DATA.recipes = [
 
 /* ---------- Worms ---------- */
 DATA.wormTraits = {
-  shimmer:  { name: "Shimmerback",  effect: "+15% Forklore likes",  likesBonus: .15 },
-  gourmet:  { name: "Gourmand Grub", effect: "+1 luxury ingredient/day", ingredient: "wormgold" },
-  oracle:   { name: "Oracle Worm",   effect: "Reveals map nodes at night" },
-  philosopher: { name: "Philosopher Worm", effect: "+2 max HP each dawn" },
+  shimmer:  { name: "Shimmerback",  effect: "+15% Forklore likes", likesBonus: .15,
+              today: "Today: every Forklore post earns +15% likes." },
+  gourmet:  { name: "Gourmand Grub", effect: "+1 luxury ingredient/day", ingredient: "wormgold",
+              today: "Today: each dawn, +1 ✨ Vermicelli Caviar lands in your pack." },
+  oracle:   { name: "Oracle Worm",   effect: "Reveals map nodes at night",
+              today: "Today: night expeditions reveal hidden map nodes." },
+  philosopher: { name: "Philosopher Worm", effect: "+2 max HP each dawn",
+              today: "Today: each dawn, your max HP grows by +2 (permanent)." },
 };
 DATA.wormRarities = [
   { id: "common", name: "Common", color: "#95e06c", weight: 55 },
@@ -59,7 +63,7 @@ DATA.upgrades = [
   { id: "kitchen", name: "Gourmet Kitchen", icon: "🍳", levels: [ {cost:60},{cost:180},{cost:400} ],
     desc: lv => `Cooking window +${lv*10}%, recipe likes +${lv*15}%` },
   { id: "wormery", name: "Wormery Wings", icon: "🪱", levels: [ {cost:50},{cost:160},{cost:380} ],
-    desc: lv => `${lv+1} worm slots; breeding speed +${lv*25}%` },
+    desc: lv => `${lv+2} worm slots; breeding speed +${lv*25}%` },
   { id: "guesthall", name: "Guest Hall", icon: "🏛️", levels: [ {cost:80},{cost:220} ],
     desc: lv => `Bring ${lv+1} allies into battles` },
   { id: "observatory", name: "Observatory", icon: "🔭", levels: [ {cost:100},{cost:260} ],

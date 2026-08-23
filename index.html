@@ -13,7 +13,7 @@
 <link rel="manifest" href="/manifest.json">
 <link rel="icon" href="/assets/icons/icon-192.png">
 <title>Starlight Supper</title>
-<link rel="stylesheet" href="style.css?v=20260823g">
+<link rel="stylesheet" href="style.css?v=20260824ba">
 </head>
 <body>
 <div id="game-shell">
@@ -101,6 +101,7 @@
   <!-- INTRO CINEMATIC -->
   <div id="screen-intro" class="screen">
     <div class="intro-stage">
+      <canvas id="intro-canvas" aria-hidden="true"></canvas>
       <div id="intro-vignette"></div>
       <div class="intro-content">
         <div id="intro-title"></div>
@@ -116,6 +117,7 @@
   <!-- STORY / DIALOGUE OVERLAY -->
   <div id="overlay-story" class="overlay hidden">
     <div class="story-card">
+      <canvas id="story-scene" aria-hidden="true"></canvas>
       <div id="story-portrait-wrap"><canvas id="story-portrait" width="140" height="140"></canvas></div>
       <div class="story-text-wrap">
         <div id="story-speaker" class="story-speaker"></div>
@@ -155,19 +157,19 @@
   </div>
 </div>
 
-<script src="js/data.js?v=20260823e"></script>
-<script src="js/audio.js?v=20260823f"></script>
-<script src="js/chip.js?v=20260823f"></script>
-<script src="js/art.js?v=20260823e"></script>
-<script src="js/engine.js?v=20260823e"></script>
-<script src="js/cooking.js?v=20260823e"></script>
-<script src="js/battle.js?v=20260823g"></script>
-<script src="js/story.js?v=20260823e"></script>
-<script src="js/intro.js?v=20260823f"></script>
-<script src="js/worldmap.js?v=20260823e"></script>
-<script src="js/world.js?v=20260823g"></script>
-<script src="js/hub.js?v=20260823e"></script>
-<script src="js/main.js?v=20260823e"></script>
+<script src="js/data.js?v=20260824ba"></script>
+<script src="js/audio.js?v=20260824ba"></script>
+<script src="js/chip.js?v=20260824ba"></script>
+<script src="js/art.js?v=20260824ba"></script>
+<script src="js/engine.js?v=20260824ba"></script>
+<script src="js/cooking.js?v=20260824ba"></script>
+<script src="js/battle.js?v=20260824ba"></script>
+<script src="js/story.js?v=20260824ba"></script>
+<script src="js/intro.js?v=20260824ba"></script>
+<script src="js/worldmap.js?v=20260824ba"></script>
+<script src="js/world.js?v=20260824ba"></script>
+<script src="js/hub.js?v=20260824ba"></script>
+<script src="js/main.js?v=20260824ba"></script>
 <script>
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => navigator.serviceWorker.register('/sw.js').catch(console.error));

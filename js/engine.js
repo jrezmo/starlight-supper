@@ -229,9 +229,9 @@ function sleepToDawn() {
   State.flags.perfectDishesToday = 0; // WS-1: Reset perfect dishes count each day
   State.flags.starChefStreak = false; // WS-1: Reset star chef streak each day
   const gourmet = State.worms.filter(w => w.trait === "gourmet").length;
-  if (gourmet) { addInv("wormgold", gourmet); toast(`🪱 Vermicelli Caviar +${gourmet}`); }
+  if (gourmet) { addInv("wormgold", gourmet); toast(`✨ Gourmand Grub: +${gourmet} Vermicelli Caviar delivered!`); }
   const philo = State.worms.filter(w => w.trait === "philosopher").length;
-  if (philo) { State.maxHp += 2 * philo; State.hp = State.maxHp; toast(`🪱 Max HP +${2 * philo}`); }
+  if (philo) { State.maxHp += 2 * philo; State.hp = State.maxHp; toast(`✨ Philosopher Worm: +${2 * philo} max HP (permanent)!`); }
   if (State.flags.rations === undefined) State.flags.rations = 0;
   updateHUD();
   autoslot(); // autosave at dawn so a refresh never loses the day

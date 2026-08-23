@@ -176,27 +176,37 @@ function forkloreOpen() {
     const likes = parseInt(b.dataset.likes), cash = parseInt(b.dataset.cash);
     State.followers += Math.max(1, Math.round(likes / 8));
     State.money += cash;
+    const shimmers = State.worms.filter(w => w.trait === "shimmer").length; // WS-11 cause/effect clarity
     AudioSys.good(); toast(`📸 Viral! +${likes} likes, +💰${cash}`, "gold");
+    if (shimmers) toast(`✨ Shimmerback: +15% likes applied!${shimmers > 1 ? ` ×${shimmers} worms = +${shimmers * 15}%` : ""}`, "gold");
     log(`📱 Posted: +${likes} likes, +💰${cash}`);
     updateHUD(); forkloreOpen();
   });
 }
 
 /* ---------- Wormery ---------- */
+function wormerySlots() { return 2 + upgradeLv("wormery"); } // WS-11: base 2 so the guided tutorial is completable on a fresh save
+function feedableIngredients() {
+  return Object.keys(State.inventory).filter(id => (State.inventory[id] || 0) > 0);
+}
 function wormeryOpen() {
   $("panel-title").textContent = "🪱 Wormery";
-  const slots = 1 + upgradeLv("wormery");
+  const slots = wormerySlots();
   let html = `<p class="map-desc">The rarest, smartest worms in the galaxy — and they have opinions.</p>
-  <div class="card"><h4>Residents (${State.worms.length}/${slots})</h4>`;
+  <div class="card"><h4>Residents (${State.worms.length}/${slots})</h4><div id="worm-roster">`;
   if (!State.worms.length) html += `<p>The bins are tragically empty.</p>`;
-  State.worms.forEach(w => {
+  State.worms.forEach((w, wi) => {
     const t = DATA.wormTraits[w.trait], r = DATA.wormRarities.find(x => x.id === w.rarity);
-    html += `<div style="padding:4px 0"><img src="assets/worm.png" class="worm-icon" onerror="this.remove()"> 🪱 <b style="color:${r.color}">${t.name}</b> <span class="tag">${r.name}</span> <small>${t.effect}</small></div>`;
+    html += `<div class="worm-card" data-worm="${wi}"><img src="assets/worm.png" class="worm-icon" onerror="this.remove()"> 🪱 <b style="color:${r.color}">${t.name}</b> <span class="tag">${r.name}</span> <small>${t.effect}</small>
+      <span class="worm-today">${t.today || ""}</span></div>`;
   });
-  html += `</div>`;
+  html += `</div></div>`;
   const cost = 30 + (State.wormBuys || 0) * 15;
+  const canFeed = State.worms.length > 0 && feedableIngredients().length > 0;
   html += `<div class="card row spread"><div><h4>Specimen Market</h4><p>Pedigree stock from across the galaxy.</p></div>
     <button id="btn-buy-worm" class="btn btn-primary" ${State.worms.length >= slots || State.money < cost ? "disabled" : ""}>Buy — 💰${cost}</button></div>`;
+  html += `<div class="card row spread"><div><h4>Feeding Trough</h4><p>A good meal may bring out rarer qualities.</p></div>
+    <button id="btn-feed-worm" class="btn btn-teal" ${canFeed ? "" : "disabled"}>🍽 Feed (1 🌱)</button></div>`;
   if (State.worms.length >= 2)
     html += `<div class="card row spread"><div><h4>Breeding Chamber</h4><p>Two worms in, one ambitious egg out.</p></div>
       <button id="btn-breed" class="btn btn-teal">🥚 Breed ⚡1</button></div>`;
@@ -210,6 +220,23 @@ function wormeryOpen() {
     AudioSys.good(); toast(`🪱 New arrival: ${DATA.wormTraits[trait].name}!`, "gold");
     updateHUD(); wormeryOpen();
   };
+  $("btn-feed-worm").onclick = () => {
+    const avail = feedableIngredients();
+    if (!State.worms.length || !avail.length) return;
+    useInv(pick(avail), 1);
+    State.flags.wormFeedCount = (State.flags.wormFeedCount || 0) + 1;
+    if (chance(.5)) { // a fine meal brings out hidden quality
+      const w = pick(State.worms);
+      const order = ["common", "rare", "epic", "legendary"];
+      const i = Math.min(3, order.indexOf(w.rarity) + 1);
+      if (i > order.indexOf(w.rarity)) {
+        w.rarity = order[i];
+        AudioSys.jewel();
+        toast(`✨ ${DATA.wormTraits[w.trait].name}: now ${DATA.wormRarities.find(r=>r.id===w.rarity).name}!`, "gold");
+      } else AudioSys.good();
+    } else AudioSys.good();
+    updateHUD(); wormeryOpen();
+  };
   const bb = $("btn-breed");
   bb && (bb.onclick = () => {
     if (!spendEnergy(1)) return;
@@ -218,13 +245,119 @@ function wormeryOpen() {
     const childRarity = order[Math.min(3, Math.max(order.indexOf(a.rarity), order.indexOf(b.rarity)) + (chance(.35) ? 1 : 0))];
     const childTrait = chance(.5) ? a.trait : b.trait;
     State.worms.unshift({ trait: childTrait, rarity: childRarity });
-    while (State.worms.length > slots) State.worms.pop();
+    window.__tutBred = true; // WS-11: completes tutorial step 4 if the tour is running
+    while (State.worms.length > wormerySlots()) State.worms.pop();
     AudioSys.jewel();
     toast(`🥚 Offspring: ${DATA.wormTraits[childTrait].name} (${childRarity})!`, "gold");
     updateHUD(); wormeryOpen();
     offerSleep();
   });
+  // WS-11: one-time guided walkthrough on first visit
+  if (!State.flags.wormeryTutorialDone && typeof WormeryTutorial !== "undefined") WormeryTutorial.maybeStart();
 }
+
+/* ---------- WS-11 Wormery guided tutorial ----------
+   4 steps, each spotlights the real UI element and waits for the player to do it:
+   buy slot → feed → trait appears → breed. Runs exactly once (State.flags.wormeryTutorialDone,
+   persists through save/load). */
+const WormeryTutorial = (() => {
+  let overlay = null, pollTimer = null, stepIdx = -1;
+
+  function steps() {
+    return [
+      { text: `<b>Welcome to the Wormery!</b> Your worms are your fame engine.<br><br><b>Step 1:</b> tap <b>Buy</b> to adopt a new specimen into an open slot.`,
+        target: () => $("btn-buy-worm"), done: n0 => State.worms.length > n0 },
+      { text: `<b>Step 2:</b> worms work better fed. Tap <b>Feed</b> to spend one ingredient from your pack — a fine meal may reveal hidden qualities.`,
+        target: () => $("btn-feed-worm"), done: c0 => (State.flags.wormFeedCount || 0) > c0 },
+      { text: `<b>Step 3:</b> every worm's card lists <b>what it does today</b> — that green line is its real, current effect. No guessing.`,
+        target: () => document.querySelector("#worm-roster .worm-card"), done: () => false, advanceOn: "continue" },
+      { text: `<b>Step 4:</b> with two or more worms, tap <b>Breed</b> (costs ⚡1 energy) to combine traits into an ambitious egg. That's the whole loop!`,
+        target: () => $("btn-breed"), done: () => window.__tutBred === true },
+    ];
+  }
+
+  function maybeStart() {
+    if (State.flags.wormeryTutorialDone) return;
+    // If a tour is already running (panel re-rendered after buy/feed), keep its
+    // baseline counters and current step — otherwise they'd reset every reopen
+    // and no done-condition could ever fire.
+    if (stepIdx === -1) {
+      window.__tutBred = false; window.__tutN0 = State.worms.length;
+      window.__tutC0 = State.flags.wormFeedCount || 0;
+    }
+    startStep(stepIdx === -1 ? 0 : stepIdx);
+  }
+  function startStep(i) {
+    stepIdx = i;
+    const S = steps()[i];
+    buildOverlay(S);
+    clearInterval(pollTimer);
+    pollTimer = setInterval(() => {
+      if (!document.getElementById("screen-panel")?.classList.contains("active")) { finish(false); return; }
+      positionTip(S);
+      if (!S.advanceOn && S.done && S.done(i === 0 ? window.__tutN0 : i === 1 ? window.__tutC0 : null)) nextStep();
+    }, 350);
+  }
+  function buildOverlay(S) {
+    if (!overlay) {
+      overlay = document.createElement("div");
+      overlay.id = "tutorial-overlay";
+      overlay.innerHTML = `<div class="tut-dim"></div><div class="tut-spot"></div>
+        <div class="tut-tip"><span class="tut-step"></span><span class="tut-msg"></span>
+        <div class="tut-actions"><button class="btn btn-small tut-skip">Skip tour</button><button class="btn btn-small btn-primary tut-next" style="display:none">Got it ✓</button></div></div>`;
+      document.body.appendChild(overlay);
+      overlay.querySelector(".tut-skip").addEventListener("click", () => finish(true));
+      overlay.querySelector(".tut-next").addEventListener("click", () => nextStep());
+      addEventListener("resize", () => positionTip(steps()[stepIdx]));
+      addEventListener("scroll", () => positionTip(steps()[stepIdx]), true);
+    }
+    overlay.querySelector(".tut-step").textContent = `Wormery · Step ${stepIdx + 1}/4`;
+    overlay.querySelector(".tut-msg").innerHTML = S.text;
+    overlay.querySelector(".tut-next").style.display = S.advanceOn ? "" : "none";
+    overlay.querySelector(".tut-skip").textContent = "Skip tour";
+    positionTip(S);
+  }
+  function positionTip(S) {
+    if (!overlay || !S) return;
+    const el = S.target && S.target();
+    const dim = overlay.querySelector(".tut-dim");
+    const spot = overlay.querySelector(".tut-spot");
+    const tip = overlay.querySelector(".tut-tip");
+    if (!el) { // target not rendered yet (e.g. breed needs 2 worms): center the tip
+      dim.style.setProperty("clip-path", "none"); dim.style.background = "rgba(5,3,18,.72)";
+      spot.style.display = "none";
+      tip.style.left = "50%"; tip.style.top = "18%"; tip.style.transform = "translateX(-50%)";
+      return;
+    }
+    spot.style.display = "";
+    el.scrollIntoView({ block: "center", behavior: "smooth" });
+    const r = el.getBoundingClientRect(), pad = 8;
+    spot.style.left = (r.left - pad) + "px"; spot.style.top = (r.top - pad) + "px";
+    spot.style.width = (r.width + pad * 2) + "px"; spot.style.height = (r.height + pad * 2) + "px";
+    // cut a hole in the dim layer around the spotlight
+    dim.style.clipPath = `polygon(0 0, 100% 0, 100% 100%, 0 100%, 0 0, ${r.left - pad}px ${Math.max(0,r.top - pad)}px, ${r.left - pad}px ${r.bottom + pad}px, ${r.right + pad}px ${r.bottom + pad}px, ${r.right + pad}px ${Math.max(0,r.top - pad)}px, ${r.left - pad}px ${Math.max(0,r.top - pad)}px)`;
+    dim.style.background = "rgba(5,3,18,.72)";
+    // place the tip below (or above) the spotlight, clamped to viewport
+    let tx = Math.min(Math.max(12, r.left), innerWidth - 320), ty = r.bottom + 18;
+    if (ty + 180 > innerHeight) ty = Math.max(12, r.top - 190);
+    tip.style.left = tx + "px"; tip.style.top = ty + "px"; tip.style.transform = "none";
+  }
+  function nextStep() {
+    AudioSys.click();
+    if (stepIdx >= steps().length - 1) { finish(false); return; }
+    startStep(stepIdx + 1);
+  }
+  function finish(skipped) {
+    clearInterval(pollTimer); pollTimer = null;
+    stepIdx = -1; // reset so a future fresh-save tour starts clean
+    if (overlay) { overlay.remove(); overlay = null; }
+    State.flags.wormeryTutorialDone = true;
+    autoslot(); // persist immediately so it never shows again, even before next dawn
+    if (skipped) toast("🪱 Tour skipped — the bins await.");
+    else toast("🎓 Wormery mastered! Traits → likes, likes → fame.", "gold");
+  }
+  return { maybeStart };
+})();
 function weightedRarity() {
   const total = DATA.wormRarities.reduce((a, r) => a + r.weight, 0);
   let roll = Math.random() * total;
