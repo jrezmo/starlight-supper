@@ -36,6 +36,8 @@ DATA.recipes = [
   { id: "kettlebroth",    name: "First Broth of the Cosmos", emoji: "🍲", art: "dish6.png",
     req: { moonroe: 1, pearlroot: 1, wormgold: 1 }, baseLikes: 90, price: 140,
     lore: "Nimbus's grandmother's recipe. The Kettle remembers it.", difficulty: 5 },
+  { id: "platingFinisher", name: "Plating Finisher", emoji: "✨", art: "dish_plating.png",
+    req: {}, baseLikes: 0, price: 0, lore: "The final flourish.", difficulty: 5 },
 ];
 
 /* ---------- Worms ---------- */

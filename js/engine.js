@@ -7,7 +7,7 @@ const State = {
   planet: null,
   inventory: {}, dishes: {},
   upgrades: {}, worms: [], allies: [], jewels: [],
-  flags: {}, introDone: false,
+  flags: {}, introDone: false, previousFollowers: 12,
 };
 
 function saveGame() { localStorage.setItem(AUTOS_KEY, JSON.stringify(State)); toast("💾 Saved", "gold"); }
@@ -154,7 +154,44 @@ function updateHUD() {
     : "🏠 Home Shelter";
   $("hud-hp").textContent = `❤️ ${State.hp}/${State.maxHp}`;
   $("hud-money").textContent = "💰 " + State.money;
-  $("hud-followers").textContent = "📱 " + State.followers;
+
+  // WS-1: Rolling Likes Odometer
+  const hudFollowersEl = $("hud-followers");
+  const oldFollowers = State.previousFollowers || 0;
+  const newFollowers = State.followers;
+
+  if (newFollowers !== oldFollowers) {
+    let current = oldFollowers;
+    const increment = Math.ceil((newFollowers - oldFollowers) / 20); // Animate in 20 steps
+    const duration = 500; // ms
+    const stepTime = duration / Math.abs(newFollowers - oldFollowers || 1);
+
+    const animate = () => {
+      current += increment;
+      if ((increment > 0 && current < newFollowers) || (increment < 0 && current > newFollowers)) {
+        hudFollowersEl.textContent = "📱 " + Math.round(current);
+        requestAnimationFrame(animate);
+      } else {
+        hudFollowersEl.textContent = "📱 " + newFollowers;
+        State.previousFollowers = newFollowers; // Update previous after animation
+        // Check for milestones to play chiptune
+        if (newFollowers > oldFollowers && newFollowers >= 100 && oldFollowers < 100) {
+          AudioSys.delightBurst(1); // Small burst for 100 followers
+          toast("🎉 Viral! 100+ Followers!");
+        } else if (newFollowers > oldFollowers && newFollowers >= 500 && oldFollowers < 500) {
+          AudioSys.delightBurst(2); // Medium burst for 500 followers
+          toast("🚀 Mega Viral! 500+ Followers!");
+        } else if (newFollowers > oldFollowers && newFollowers >= 1000 && oldFollowers < 1000) {
+          AudioSys.delightBurst(3); // Large burst for 1000 followers
+          toast("🌠 Galaxy Famous! 1000+ Followers!");
+        }
+      }
+    };
+    requestAnimationFrame(animate);
+  } else {
+    hudFollowersEl.textContent = "📱 " + State.followers;
+    State.previousFollowers = State.followers;
+  }
 }
 
 /* Energy: day runs 06:00–20:00; each energy spent advances the clock 4.5h */
@@ -189,6 +226,8 @@ function likesBonusMult() {
 function sleepToDawn() {
   State.day++; State.energy = State.maxEnergy;
   State.hp = State.maxHp;
+  State.flags.perfectDishesToday = 0; // WS-1: Reset perfect dishes count each day
+  State.flags.starChefStreak = false; // WS-1: Reset star chef streak each day
   const gourmet = State.worms.filter(w => w.trait === "gourmet").length;
   if (gourmet) { addInv("wormgold", gourmet); toast(`🪱 Vermicelli Caviar +${gourmet}`); }
   const philo = State.worms.filter(w => w.trait === "philosopher").length;

@@ -32,24 +32,32 @@ const Cooking = (() => {
     const r = DATA.recipes.find(x => x.id === recipeId);
     Object.entries(r.req).forEach(([ing, n]) => useInv(ing, n));
     const steps = [];
+    // WS-1: First-cook curriculum - force Nectarfoam (2 identical steps)
+    if (!State.flags.firstCookDone) {
+      recipeId = "nectarfoam";
+      State.flags.firstCookDone = true;
+      r = DATA.recipes.find(x => x.id === recipeId); // Re-find recipe if changed
+    }
     Object.entries(r.req).forEach(([ing, n]) => { for (let i = 0; i < n; i++) steps.push(ing); });
-    session = { recipe: r, steps, stepIdx: 0, perfects: 0, goods: 0 };
+    session = { recipe: r, steps, stepIdx: 0, perfects: 0, goods: 0, combo: 0 };
     AudioSys.click();
     renderMinigame();
   }
 
   function renderMinigame() {
     const s = session; if (!s) return;
-    const ing = DATA.ingredients[s.steps[s.stepIdx]];
-    const widthPct = 26 - s.recipe.difficulty * 2.5;
-    $("panel-title").textContent = `🍳 ${s.recipe.name} (${s.stepIdx + 1}/${s.steps.length})`;
+    const isPlating = s.isPlatingFinisher;
+    const ing = isPlating ? DATA.recipes.find(r => r.id === "platingFinisher") : DATA.ingredients[s.steps[s.stepIdx]];
+    const widthPct = isPlating ? 12 : (26 - s.recipe.difficulty * 2.5); // Narrower zone for plating
+    $("panel-title").textContent = `🍳 ${s.recipe.name} (${isPlating ? "Plating Finisher" : (s.stepIdx + 1) + "/" + s.steps.length})`;
     $("panel-body").innerHTML = `
       <div class="card cook-card">
-        <h4 style="font-size:20px">${ing.emoji} Adding ${ing.name}</h4>
-        <div class="cook-ticks">${"★".repeat(s.recipe.difficulty)}</div>
+        <h4 style="font-size:20px">${ing.emoji} ${isPlating ? "Final Plating!" : "Adding " + ing.name}</h4>
+        ${isPlating ? `<p class="map-desc">Hit the narrow zone for a bonus multiplier!</p>` : `<div class="cook-ticks">${"★".repeat(s.recipe.difficulty)}</div>`}
         <div class="cook-zone"><div class="cook-target"></div><div class="cook-marker" id="marker"></div></div>
-        <button id="btn-strike" class="btn btn-primary big-strike">⬇ ADD IT! (space)</button>
+        <button id="btn-strike" class="btn btn-primary big-strike">⬇ ${isPlating ? "FINISH!" : "ADD IT! (space)"}</button>
         <img class="cook-scene" src="assets/cooking.png" alt="" onerror="this.remove()">
+        <div class="combo-display" id="combo-display">Combo: x${s.combo}</div>
       </div>`;
     const target = document.querySelector(".cook-target");
     target.style.left = `calc(${50 - widthPct / 2}%)`; target.style.width = widthPct + "%";
@@ -67,13 +75,29 @@ const Cooking = (() => {
       if (!running || !session) return;
       running = false; cancelAnimationFrame(raf);
       const dist = Math.abs(pos - 50);
-      if (dist < widthPct / 4) { s.perfects++; toast("✨ PERFECT!"); AudioSys.good(); }
-      else if (dist < widthPct / 2 + 3) { s.goods++; AudioSys.click(); }
-      else { toast("💥 Fumbled!"); AudioSys.bad(); }
-      s.stepIdx++;
-      document.onkeydown = null;
-      if (s.stepIdx >= s.steps.length) setTimeout(finish, 500);
-      else setTimeout(renderMinigame, 450);
+      if (isPlating) {
+        if (dist < widthPct / 4) { s.platingBonus = 1.5; toast("🌟 PLATINUM PLATING! x1.5!"); AudioSys.jewel(); }
+        else if (dist < widthPct / 2) { s.platingBonus = 1.2; toast("✨ GOLD PLATING! x1.2!"); AudioSys.good(); }
+        else { s.platingBonus = 1.0; toast("⚪ SILVER PLATING! x1.0"); AudioSys.click(); }
+        setTimeout(finish, 500);
+      } else { // Original cooking step logic
+        if (dist < widthPct / 4) { s.perfects++; s.combo++; toast(`✨ PERFECT! COMBO x${s.combo}!`); AudioSys.good(); }
+        else if (dist < widthPct / 2 + 3) { s.goods++; s.combo = 0; AudioSys.click(); }
+        else { toast("💥 Fumbled!"); s.combo = 0; AudioSys.bad(); }
+        s.stepIdx++;
+        document.onkeydown = null;
+        if (s.stepIdx >= s.steps.length) {
+          // WS-1: Plating Finisher - push a finisher step if all perfects
+          if (s.perfects === s.steps.length) {
+            s.steps.push("platingFinisher"); // Add a special step for plating
+            s.isPlatingFinisher = true; // Flag that we're in the plating phase
+            s.stepIdx = s.steps.length - 1; // Set index to the new plating step
+            setTimeout(renderMinigame, 450);
+          } else {
+            setTimeout(finish, 500);
+          }
+        } else setTimeout(renderMinigame, 450);
+      }
     }
     $("btn-strike").onclick = strike;
     document.onkeydown = e => { if (e.code === "Space") { e.preventDefault(); strike(); } };
@@ -81,7 +105,23 @@ const Cooking = (() => {
 
   function finish() {
     const s = session; session = null;
-    const quality = clamp(Math.round((s.perfects * 2 + s.goods) * 10 / (s.steps.length * 2)), 1, 5);
+    let quality = clamp(Math.round((s.perfects * 2 + s.goods) * 10 / (s.steps.length * 2)), 1, 5);
+    // Apply plating bonus if available
+    if (s.isPlatingFinisher && s.platingBonus) {
+      quality = clamp(Math.round(quality * s.platingBonus), 1, 5);
+      if (s.platingBonus > 1.0) {
+        // Track perfect dishes for Star Chef streak (only if actual perfect plating)
+        State.flags.perfectDishesToday = (State.flags.perfectDishesToday || 0) + 1;
+        if (State.flags.perfectDishesToday >= 3) {
+          State.flags.starChefStreak = true;
+        }
+      }
+    } else {
+      // Reset perfectDishesToday if not an all-perfect dish (or no plating bonus)
+      State.flags.perfectDishesToday = 0;
+      State.flags.starChefStreak = false; // Reset streak if not all perfect
+    }
+
     State.dishes[s.recipe.id] = (State.dishes[s.recipe.id] || 0) + 1;
     State.flags["q_" + s.recipe.id] = Math.max(State.flags["q_" + s.recipe.id] || 0, quality);
     log(`🍳 Cooked <b>${s.recipe.emoji} ${s.recipe.name}</b> — ${"⭐".repeat(quality)}`);
@@ -118,7 +158,8 @@ function forkloreOpen() {
   else html = entries.map(([id, n]) => {
     const r = DATA.recipes.find(x => x.id === id);
     const q = State.flags["q_" + id] || 3;
-    const likes = Math.round(Cooking.recipeLikes(r) * (0.6 + q * 0.15));
+    let likes = Math.round(Cooking.recipeLikes(r) * (0.6 + q * 0.15));
+    if (State.flags.starChefStreak) { likes += State.dishes[id]; } // +1 like per dish posted if Star Chef streak is active
     const cash = Math.round(likes * (0.9 + Math.random() * .4) * (1 + upgradeLv("studio") * .3));
     return `<div class="card asset-card"><img class="dish-art" src="assets/${r.art}" alt="" onerror="this.style.display='none'">
       <div class="asset-body"><div class="row spread">
