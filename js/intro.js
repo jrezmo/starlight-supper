@@ -29,7 +29,7 @@ const Intro = (() => {
       text: "Cook. Duel. Brew. Rekindle the Kettle." },
   ];
 
-  const ART_V = "20260822t";
+  const ART_V = "20260823a";
   let idx = 0, typeTimer = null;
 
   // gentle crossfaded theme switching
