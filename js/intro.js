@@ -4,9 +4,9 @@ const Intro = (() => {
   const BEATS = [
     { label: "", cue: "title", art: "title", tint: "#ffd76b",
       text: "Three hundred years ago, the Great Kettle — the cosmic hearth that simmered the First Broth — went cold." },
-    { label: "THE SUNDERING", cue: null, sting: "defeatSting",
+    { label: "THE SUNDERING", cue: null, sting: "defeatSting", art: "sundering", tint: "#8fa8ff",
       text: "They call it the Sundering. The stars went quiet. The broth went bland." },
-    { label: "GRANDMOTHER'S MAP", cue: null,
+    { label: "GRANDMOTHER'S MAP", cue: null, art: "napkin", tint: "#ffd76b",
       text: "Grandmother said the Kettle burned on three jewels — one on each of three worlds. She drew them on a napkin. We still have the napkin." },
     { label: "VERDANTH · Moss Cathedral", cue: "verdanth", art: "verdanth", tint: "#7de08a",
       text: "Verdanth, where forests hum in major keys and Madame Vex judges your table manners before your courage." },
@@ -16,9 +16,9 @@ const Intro = (() => {
       text: "Pelagia, where Admiral Mor pressure-cooks everything beautifully and speaks only in whale song and sighs." },
     { label: "NIMBUS QUILL", cue: "home", art: "nimbus", tint: "#c9b8ff",
       text: "You are Nimbus Quill — last of the Vessari Gourmand Nomads. You inherit her recipes, one rustbucket ship, and a family of worms with strong opinions." },
-    { label: "BY DAY", cue: null, sting: "delightBurst",
+    { label: "BY DAY", cue: null, sting: "delightBurst", art: "byday", tint: "#ffc857",
       text: "BY DAY: cook gourmet dishes, post them on Forklore, raise the galaxy's smartest worms. Fame is fuel. Likes are money." },
-    { label: "BY EXPEDITION", cue: "battle", sting: "hitStinger",
+    { label: "BY EXPEDITION", cue: "battle", sting: "hitStinger", art: "expedition", tint: "#6cb8ff",
       text: "BY ⚡ENERGY: explore the worlds. Fight what fights you. Befriend who bakes." },
     { label: "TEA, NOT WAR", cue: "tea", sting: "victoryFanfare", art: "madame_vex", tint: "#ffb3d9",
       text: "Every rival can be beaten at a TEA PARTY. Win the duel of etiquette and they fight beside you." },
@@ -31,7 +31,7 @@ const Intro = (() => {
 
   const ART_V = "20260823a";
   const VO_V = "20260823b";
-  let idx = 0, typeTimer = null, introSceneCanvas = null;
+  let idx = 0, typeTimer = null;
   // ---- Narrator voiceover ----
   const VO = {};
   BEATS.forEach((_, i) => { const a = new Audio(); a.preload = "auto"; a.src = `assets/vo/b${String(i).padStart(2,"0")}.mp3?v=${VO_V}`; VO[i] = a; });
@@ -66,11 +66,6 @@ const Intro = (() => {
   function start() {
     idx = 0;
     showScreen("screen-intro");
-    // WS-11: animated starfield/planets/ship behind the cards (art assets still load as before)
-    introSceneCanvas = document.getElementById("intro-canvas");
-    if (introSceneCanvas && typeof Art !== "undefined" && Art.startScene) {
-      Art.startScene(introSceneCanvas, { density: 1.2 });
-    }
     $("intro-dots").innerHTML = BEATS.map((_, i) => `<span data-i="${i}"></span>`).join("");
     const stage = document.getElementById("screen-intro");
     stage.onclick = () => advance();
@@ -89,7 +84,6 @@ const Intro = (() => {
     if (typeTimer) clearInterval(typeTimer);
     stopVO();
     clearTimeout(fadeTimer);
-    if (introSceneCanvas && typeof Art !== "undefined" && Art.stopScene) Art.stopScene(introSceneCanvas);
     if (introKeyHandler) document.removeEventListener("keydown", introKeyHandler);
     document.getElementById("screen-intro").onclick = null;
   }
@@ -111,11 +105,6 @@ const Intro = (() => {
 
     // watermark art backdrop with soft ken-burns drift
     const stage = document.querySelector("#screen-intro .intro-stage");
-    if (introSceneCanvas) {
-      if (b.tint) Art.setSceneTint(introSceneCanvas, b.tint); // scene wash follows each beat
-      // planet palette shift per world beat
-      stage.style.setProperty("--beat-glow", b.tint || "#ffd76b");
-    }
     if (b.art) {
       stage.style.setProperty("--intro-art", `url(assets/${b.art}.png?v=${ART_V})`);
       stage.classList.add("has-art");
