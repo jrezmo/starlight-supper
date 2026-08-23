@@ -426,7 +426,7 @@ const World = (() => {
   // Stick control: use the on-screen stick itself (pointerdown ON it), with
   // capture so iPad Safari keeps sending moves even when the finger drifts off.
   document.addEventListener("pointerdown", e => {
-    if (!worldOpen()) return;
+    if (!worldOpen() || touchDriving) return;
     const s = el();
     if (!s || s.style.display === "none") return;
     if (!s.contains(e.target)) return;          // only start drags on the stick
@@ -435,11 +435,11 @@ const World = (() => {
     e.preventDefault();
   }, { passive: false });
   document.addEventListener("pointermove", e => {
-    if (stickId === null || e.pointerId !== stickId) return;
+    if (touchDriving || stickId === null || e.pointerId !== stickId) return;
     e.preventDefault(); emit(e);
   }, { passive: false });
   const end = e => {
-    if (stickId === null || e.pointerId !== stickId) return;
+    if (touchDriving || stickId === null || e.pointerId !== stickId) return;
     stickId = null;
     if (window.__stickHook) window.__stickHook(0, 0);
     setKnob(0, 0);
@@ -455,21 +455,20 @@ const World = (() => {
      preventDefault() blocks that gesture takeover. When touch is driving,
      pointer handlers stand down to avoid double-processing. */
   let touchDriving = false;
-  const tpos = t => ({ x: t.clientX, y: t.clientY });
   const stickEl = () => {
     const s = el();
     if (!s || s.style.display === "none" || !worldOpen()) return null;
     return s;
   };
   let s0 = null;
+  window.__touchProbe = () => ({touchDriving, s0, sx, sy});
   function touchStart(e) {
     const s = stickEl();
     if (!s) return;
     const t = [...e.changedTouches].find(t => s.contains(t.target));
     if (!t) return;
     touchDriving = true;
-    const p = tpos(t);
-    sx = p.x; sy = p.y; s0 = t.identifier;
+    sx = t.clientX; sy = t.clientY; s0 = t.identifier;
     e.preventDefault();
   }
   function touchMove(e) {
@@ -477,7 +476,7 @@ const World = (() => {
     const t = [...e.changedTouches].find(t => t.identifier === s0);
     if (!t) return;
     e.preventDefault();
-    emit(tpos(t));
+    emit(t);
   }
   function touchEnd(e) {
     if (!touchDriving || s0 === null) return;
