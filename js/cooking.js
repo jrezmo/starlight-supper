@@ -123,6 +123,7 @@ const Cooking = (() => {
     }
 
     State.dishes[s.recipe.id] = (State.dishes[s.recipe.id] || 0) + 1;
+    if (typeof Service !== "undefined") Service.deposit(s.recipe.id, quality); // WS-8: plate lands on the pass
     State.flags["q_" + s.recipe.id] = Math.max(State.flags["q_" + s.recipe.id] || 0, quality);
     log(`🍳 Cooked <b>${s.recipe.emoji} ${s.recipe.name}</b> — ${"⭐".repeat(quality)}`);
     toast(`${s.recipe.emoji} ${s.recipe.name}: ${"⭐".repeat(quality)}`, "gold");
@@ -167,6 +168,7 @@ function forkloreOpen() {
       <button class="btn btn-teal" data-post="${id}" data-cash="${cash}" data-likes="${likes}">Post 📸</button>
     </div></div></div>`;
   }).join("");
+  if (typeof Service !== "undefined") html += Service.forkloreCard(); // WS-8
   html += `<div class="card"><h4>Trending tags</h4><p>${pick(["#rusticplating", "#kettlecore", "#wormgoldwednesdays", "#voltEatsWhat", "#sousvidebutmakeitspace"])} · your followers love ${pick(["drama", "plating shots", "worm content", "feud tea"])}</p></div>`;
   $("panel-body").innerHTML = html;
   showScreen("screen-panel");

@@ -30,6 +30,7 @@ const Hub = (() => {
     if (State.energy > 0) {
       if (atHome) {
         mkBtn("🍳 Cook Gourmet", () => Cooking.open(), true);
+        mkBtn("🍽️ Open for Service", () => Service.open(), true);
         mkBtn("📱 Forklore", () => forkloreOpen());
         mkBtn("🪱 Wormery", () => wormeryOpen());
         mkBtn("🏠 Upgrades", () => shelterOpen());
