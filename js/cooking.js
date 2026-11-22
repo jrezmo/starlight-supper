@@ -29,7 +29,7 @@ const Cooking = (() => {
 
   function start(recipeId) {
     if (!spendEnergy(1)) return;
-    const r = DATA.recipes.find(x => x.id === recipeId);
+    let r = DATA.recipes.find(x => x.id === recipeId);
     Object.entries(r.req).forEach(([ing, n]) => useInv(ing, n));
     const steps = [];
     // WS-1: First-cook curriculum - force Nectarfoam (2 identical steps)
