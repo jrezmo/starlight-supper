@@ -1026,7 +1026,7 @@ const Service = (() => {
       c.fillStyle = "#b0b6c8"; c.beginPath(); c.arc(x, Wd.y0 + 24, 10, 0, 7); c.fill();
     }
     c.fillStyle = "#3a2a20"; c.fillRect(Wd.x0, Wd.y1 - 14, Wd.x1 - Wd.x0, 14);
-    text(c, "KITCHEN", Wd.x1 - 36, Wd.y1 - 7, 9, "#ffc857", "center", false);
+    if (!L.portrait) text(c, "THE PASS ▾", Wd.x1 - 44, Wd.y1 - 7, 9, "#ffc857", "center", false);
     // floor: warm checker
     const fy = L.wallH;
     g = c.createLinearGradient(0, fy, 0, L.H);
@@ -1080,7 +1080,6 @@ const Service = (() => {
     c.fillStyle = "#6b3f2a"; rr(c, C.x0, C.y, C.x1 - C.x0, C.h + 10, 10); c.fill();
     c.fillStyle = "#c98b56"; rr(c, C.x0 - 6, C.y - 6, C.x1 - C.x0 + 12, 16, 8); c.fill();
     c.fillStyle = "rgba(0,0,0,.25)"; c.fillRect(C.x0, C.y + C.h + 4, C.x1 - C.x0, 6);
-    text(c, "THE PASS", C.x0 + 34, C.y + C.h - 6, 10, "#ffd9a8", "center", false);
     const now = performance.now() / 1000;
     for (const s of L.slots) {
       const d = dishDef(s.id), st = G.stock[s.id];
@@ -1101,14 +1100,13 @@ const Service = (() => {
       } else {
         text(c, s.id === FLAMBE.id ? "🔥…" : "sold out", s.x, s.y - 16, 11, "#cfc7f2", "center");
       }
-      // emoji tag + count badge
-      text(c, d.emoji, s.x - 24, s.y - 40, 16, "#fff", "center", false);
+      // counter-front label: emoji + count (matches the guest's bubble), best plate's stars
       const label = n === Infinity ? "∞" : "×" + n;
-      c.fillStyle = n === Infinity ? "#4ecdc4" : empty ? "#5a5080" : "#ffc857";
-      rr(c, s.x + 10, s.y - 50, 26, 16, 8); c.fill();
-      text(c, label, s.x + 23, s.y - 42, 11, "#14102a", "center", false);
-      if (!empty && n !== Infinity) text(c, "★".repeat(st[0]), s.x, s.y + 18, 9, "#ffc857", "center");
-      else if (d.house) text(c, "house", s.x, s.y + 18, 9, "#b5efea", "center");
+      c.fillStyle = "rgba(20,16,42,.55)"; rr(c, s.x - 28, C.y + 14, 56, 20, 10); c.fill();
+      text(c, d.emoji, s.x - 13, C.y + 24, 14, "#fff", "center", false);
+      text(c, label, s.x + 13, C.y + 24, 12, n === Infinity ? "#7fe8df" : empty ? "#8d84a8" : "#ffc857", "center", false);
+      if (!empty && n !== Infinity) text(c, "★".repeat(st[0]), s.x, C.y + 43, 9, "#ffc857", "center", false);
+      else if (d.house) text(c, "house", s.x, C.y + 43, 9, "#b5efea", "center", false);
     }
   }
 
@@ -1334,7 +1332,7 @@ const Service = (() => {
     const x = Wd.x0 + 46, rise = 18 + b.pop * 10 + Math.sin(performance.now() / 300) * 2;
     c.save();
     c.beginPath(); c.rect(Wd.x0, Wd.y0, Wd.x1 - Wd.x0, Wd.y1 - Wd.y0 - 12); c.clip();
-    c.drawImage(allySprite("bramble"), x - 40, Wd.y1 - 12 - 40 - rise, 80, 80);
+    c.drawImage(allySprite("bramble"), x - 50, Wd.y1 - 12 - 50 - rise, 100, 100);
     if (b.pop > 0) { c.fillStyle = `rgba(255,120,40,${b.pop * .5})`; c.beginPath(); c.arc(x + 46, Wd.y1 - 22, 18 + b.pop * 6, 0, 7); c.fill(); }
     c.restore();
     // countdown pip
@@ -1347,11 +1345,11 @@ const Service = (() => {
     c.save(); c.translate(v.x, v.y);
     c.fillStyle = "rgba(0,0,0,.25)"; c.beginPath(); c.ellipse(0, 2, 18, 5, 0, 0, 7); c.fill();
     c.rotate(-bow * .25);
-    c.drawImage(allySprite("vex"), -32, -62, 64, 64);
+    c.drawImage(allySprite("vex"), -52, -100, 104, 104);
     c.restore();
     if (G.vex.line > 0) {
-      c.fillStyle = "rgba(255,248,238,.95)"; rr(c, v.x - 6, v.y - 92, 110, 22, 10); c.fill();
-      text(c, "This way, darling!", v.x + 49, v.y - 81, 10, "#e84393", "center", false);
+      c.fillStyle = "rgba(255,248,238,.95)"; rr(c, v.x + 14, v.y - 104, 110, 22, 10); c.fill();
+      text(c, "This way, darling!", v.x + 69, v.y - 93, 10, "#e84393", "center", false);
     }
   }
   function drawNell(c) {
@@ -1360,12 +1358,12 @@ const Service = (() => {
     const hop = run ? Math.abs(Math.sin(performance.now() / 60)) * 6 : 0;
     c.save(); c.translate(n.x, n.y - hop);
     c.fillStyle = "rgba(0,0,0,.25)"; c.beginPath(); c.ellipse(0, 2 + hop, 18, 5, 0, 0, 7); c.fill();
-    c.drawImage(allySprite("nell"), -32, -62, 64, 64);
-    if (n.dish) text(c, dishDef(n.dish.id).emoji, 0, -72, 20, "#fff", "center", false);
+    c.drawImage(allySprite("nell"), -50, -96, 100, 100);
+    if (n.dish) text(c, dishDef(n.dish.id).emoji, 0, -92, 22, "#fff", "center", false);
     c.restore();
     if (n.state === "idle") {
       const k = 1 - n.t / 12;
-      c.strokeStyle = "#6cb8ff"; c.lineWidth = 3; c.beginPath(); c.arc(n.x + 24, n.y - 66, 7, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * clamp(k, 0, 1)); c.stroke();
+      c.strokeStyle = "#6cb8ff"; c.lineWidth = 3; c.beginPath(); c.arc(n.x + 26, n.y - 82, 7, -Math.PI / 2, -Math.PI / 2 + Math.PI * 2 * clamp(k, 0, 1)); c.stroke();
     }
   }
   function drawBin(c) {
