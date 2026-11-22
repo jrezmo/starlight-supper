@@ -16,28 +16,31 @@ DATA.ingredients = {
   wormgold:    { name: "Vermicelli Caviar", emoji: "✨", planet: null,      value: 20, tags: ["luxury"] }, // from wormery
 };
 
-/* ---------- Recipes (gourmet!) ---------- */
+/* ---------- Recipes (gourmet!) ----------
+   stages: the tactile prep minigames this dish plays, in order (WS-9).
+     Kinds: "chop" | "pour" | "stir" | "absorb". Omitted → a default picked by difficulty.
+   hidden: internal pseudo-recipes that must never be listed as cookable. */
 DATA.recipes = [
   { id: "nectarfoam",     name: "Starbloom Foam w/ Glowsroom Dust", emoji: "🍮", art: "dish1.png",
     req: { starbloom: 2, glowsroom: 1 }, baseLikes: 14, price: 18,
-    lore: "A dessert that hums when the spoon touches it.", difficulty: 1 },
+    lore: "A dessert that hums when the spoon touches it.", difficulty: 1, stages: ["chop", "stir"] },
   { id: "cloudtart",      name: "Cloudfruit Tart, Lavasalt Crust", emoji: "🥧", art: "dish2.png",
     req: { cloudfruit: 2, lavasalt: 1 }, baseLikes: 22, price: 30,
-    lore: "Sweet as a rumor, sharp as a goodbye.", difficulty: 2 },
+    lore: "Sweet as a rumor, sharp as a goodbye.", difficulty: 2, stages: ["chop", "pour"] },
   { id: "emberceviche",   name: "Ember-Cured Cinderfin Ceviche", emoji: "🍤", art: "dish3.png",
     req: { cinderfin: 1, emberpepper: 2 }, baseLikes: 34, price: 46,
-    lore: "Cooked by anger alone. Serve cold to confuse everyone.", difficulty: 3 },
+    lore: "Cooked by anger alone. Serve cold to confuse everyone.", difficulty: 3, stages: ["chop", "absorb", "pour"] },
   { id: "abyssrisotto",   name: "Abysskelp Risotto, Pearlroot Chip", emoji: "🍚", art: "dish4.png",
     req: { abysskelp: 2, pearlroot: 1, lavasalt: 1 }, baseLikes: 40, price: 58,
-    lore: "The deep sea's apology for everything down there.", difficulty: 3 },
+    lore: "The deep sea's apology for everything down there.", difficulty: 3, stages: ["pour", "stir", "absorb"] },
   { id: "moonwellington", name: "Moonroe Wellington in Starbloom Jus", emoji: "🥮", art: "dish5.png",
     req: { moonroe: 1, starbloom: 1, glowsroom: 2 }, baseLikes: 55, price: 80,
-    lore: "The dish that ended a 300-year feud on Verdanth. Twice.", difficulty: 4 },
+    lore: "The dish that ended a 300-year feud on Verdanth. Twice.", difficulty: 4, stages: ["chop", "stir", "absorb"] },
   { id: "kettlebroth",    name: "First Broth of the Cosmos", emoji: "🍲", art: "dish6.png",
     req: { moonroe: 1, pearlroot: 1, wormgold: 1 }, baseLikes: 90, price: 140,
-    lore: "Nimbus's grandmother's recipe. The Kettle remembers it.", difficulty: 5 },
+    lore: "Nimbus's grandmother's recipe. The Kettle remembers it.", difficulty: 5, stages: ["pour", "absorb", "stir"] },
   { id: "platingFinisher", name: "Plating Finisher", emoji: "✨", art: "dish_plating.png",
-    req: {}, baseLikes: 0, price: 0, lore: "The final flourish.", difficulty: 5 },
+    req: {}, baseLikes: 0, price: 0, lore: "The final flourish.", difficulty: 5, hidden: true },
 ];
 
 /* ---------- Worms ---------- */
