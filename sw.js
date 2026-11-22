@@ -1,5 +1,5 @@
 /* Starlight Supper service worker — cache-first for static assets. */
-const CACHE = 'starlight-supper-v20260823g';
+const CACHE = 'starlight-supper-v20261122a';
 const ASSETS = [
   '/',
   '/index.html',

@@ -44,6 +44,8 @@
     addInv("starbloom", 2); addInv("glowsroom", 2);
   }
 
+  window.resetState = resetState;
+
   function startIntro() {
     if (typeof Intro !== "undefined") {
       Intro.start(() => {
