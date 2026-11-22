@@ -39,6 +39,7 @@
       planet: null, inventory: {}, dishes: {}, upgrades: {},
       worms: [{ trait: "oracle", rarity: "rare" }], allies: [], jewels: [],
       flags: { rations: 1, wormBlessing: 0 }, introDone: false, wormBuys: 0,
+      pass: [], service: null, // WS-8 (Service.ensureState fills defaults)
     });
     addInv("starbloom", 2); addInv("glowsroom", 2);
   }

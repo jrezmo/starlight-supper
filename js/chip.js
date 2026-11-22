@@ -70,6 +70,19 @@ const Chip = (() => {
       drums: true, density: 1.0, sparkle: false, sevenths: false,
       chordProg: [0, 6, 3, 6], mood: "epic",
     },
+    // WS-8 live service: bouncy diner shuffle, then a hotter rush-hour cut
+    service: {
+      name: "Supper Club Shuffle", bpm: 126, root: 55, scale: "mixolydian",
+      lead: "square", harm: "triangle", bassWave: "sawtooth",
+      drums: true, density: .7, sparkle: true, sevenths: true,
+      chordProg: [0, 3, 4, 0], mood: "bustle",
+    },
+    rush: {
+      name: "Rush Hour Rhumba", bpm: 152, root: 57, scale: "major",
+      lead: "square", harm: "square", bassWave: "sawtooth",
+      drums: true, density: .9, sparkle: true, sevenths: false,
+      chordProg: [0, 4, 5, 3], mood: "frantic",
+    },
   };
 
   function ensure() {
@@ -290,6 +303,9 @@ const Chip = (() => {
     setMuted(m) { if (master) master.gain.value = m ? 0 : .8; },
     // gameplay intensity 0..1 — raises melody density & swing feel
     setIntensity(v) { intensity = clamp(typeof v === "number" ? v : .5, 0, 1); },
+    // raw SFX primitives (WS-8 service cues): delay in seconds from now
+    tone(freq, dur, wave, vol, delay, slide) { if (ensure()) blip(freq, dur || .1, wave || "square", vol || .1, ctx.currentTime + (delay || 0), null, slide); },
+    noise(dur, vol, delay, hp) { if (ensure()) noiseHit(dur || .1, vol || .1, ctx.currentTime + (delay || 0), hp); },
     // gameplay punctuation:
     pickup() { ensure() && blip(880, .07, "square", .1) && blip(1318, .09, "square", .08, ctx.currentTime + .06); },
     heal() { ensure() && [523, 659, 784].forEach((f, i) => blip(f, .12, "triangle", .09, ctx.currentTime + i * .07)); },
